@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Package } from 'lucide-react';
+import { productSchema, validateForm } from '@/lib/validations';
 
 interface Product {
   id: string;
@@ -72,17 +73,27 @@ export default function Products() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateForm(productSchema, formData);
+    if (!validation.success) {
+      toast.error((validation as { success: false; error: string }).error);
+      return;
+    }
+    
+    const validatedData = (validation as { success: true; data: typeof formData }).data;
     setIsLoading(true);
 
     try {
+      
       if (editingProduct) {
         const { error } = await supabase
           .from('items')
           .update({ 
-            name: formData.name, 
-            price: formData.price,
-            cost_price: formData.cost_price,
-            stock: formData.stock
+            name: validatedData.name, 
+            price: validatedData.price,
+            cost_price: validatedData.cost_price,
+            stock: validatedData.stock
           })
           .eq('id', editingProduct.id);
 
@@ -92,10 +103,10 @@ export default function Products() {
         const { error } = await supabase
           .from('items')
           .insert({ 
-            name: formData.name, 
-            price: formData.price, 
-            cost_price: formData.cost_price,
-            stock: formData.stock,
+            name: validatedData.name, 
+            price: validatedData.price, 
+            cost_price: validatedData.cost_price,
+            stock: validatedData.stock,
             type: 'product' 
           });
 

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Scissors, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { loginSchema, signupSchema, validateForm } from '@/lib/validations';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,9 +25,18 @@ export default function Auth() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateForm(loginSchema, { email: loginEmail, password: loginPassword });
+    if (!validation.success) {
+      toast.error((validation as { success: false; error: string }).error);
+      return;
+    }
+    
+    const validatedData = (validation as { success: true; data: { email: string; password: string } }).data;
     setIsLoading(true);
     
-    const { error } = await signIn(loginEmail, loginPassword);
+    const { error } = await signIn(validatedData.email, validatedData.password);
     
     if (error) {
       toast.error(error.message === 'Invalid login credentials' 
@@ -41,9 +51,28 @@ export default function Auth() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateForm(signupSchema, { 
+      name: signupName, 
+      email: signupEmail, 
+      password: signupPassword, 
+      role: signupRole 
+    });
+    if (!validation.success) {
+      toast.error((validation as { success: false; error: string }).error);
+      return;
+    }
+    
+    const validatedData = (validation as { success: true; data: { name: string; email: string; password: string; role: 'owner' | 'kasir' } }).data;
     setIsLoading(true);
     
-    const { error } = await signUp(signupEmail, signupPassword, signupName, signupRole);
+    const { error } = await signUp(
+      validatedData.email, 
+      validatedData.password, 
+      validatedData.name, 
+      validatedData.role
+    );
     
     if (error) {
       if (error.message.includes('already registered')) {

@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Scissors } from 'lucide-react';
+import { serviceSchema, validateForm } from '@/lib/validations';
 
 interface Service {
   id: string;
@@ -60,13 +61,23 @@ export default function Services() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateForm(serviceSchema, formData);
+    if (!validation.success) {
+      toast.error((validation as { success: false; error: string }).error);
+      return;
+    }
+    
+    const validatedData = (validation as { success: true; data: typeof formData }).data;
     setIsLoading(true);
 
     try {
+      
       if (editingService) {
         const { error } = await supabase
           .from('items')
-          .update({ name: formData.name, price: formData.price })
+          .update({ name: validatedData.name, price: validatedData.price })
           .eq('id', editingService.id);
 
         if (error) throw error;
@@ -74,7 +85,7 @@ export default function Services() {
       } else {
         const { error } = await supabase
           .from('items')
-          .insert({ name: formData.name, price: formData.price, type: 'service' });
+          .insert({ name: validatedData.name, price: validatedData.price, type: 'service' });
 
         if (error) throw error;
         toast.success('Layanan berhasil ditambahkan');
