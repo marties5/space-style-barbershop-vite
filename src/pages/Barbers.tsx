@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, User, Search } from 'lucide-react';
+import { barberSchema, validateForm } from '@/lib/validations';
 
 interface Barber {
   id: string;
@@ -80,18 +81,28 @@ export default function Barbers() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateForm(barberSchema, formData);
+    if (!validation.success) {
+      toast.error((validation as { success: false; error: string }).error);
+      return;
+    }
+    
+    const validatedData = (validation as { success: true; data: typeof formData }).data;
     setIsLoading(true);
 
     try {
+      
       if (editingBarber) {
         const { error } = await supabase
           .from('barbers')
           .update({
-            name: formData.name,
-            photo_url: formData.photo_url || null,
-            specialization: formData.specialization || null,
-            commission_service: formData.commission_service,
-            commission_product: formData.commission_product
+            name: validatedData.name,
+            photo_url: validatedData.photo_url || null,
+            specialization: validatedData.specialization || null,
+            commission_service: validatedData.commission_service,
+            commission_product: validatedData.commission_product
           })
           .eq('id', editingBarber.id);
 
@@ -101,11 +112,11 @@ export default function Barbers() {
         const { error } = await supabase
           .from('barbers')
           .insert({
-            name: formData.name,
-            photo_url: formData.photo_url || null,
-            specialization: formData.specialization || null,
-            commission_service: formData.commission_service,
-            commission_product: formData.commission_product
+            name: validatedData.name,
+            photo_url: validatedData.photo_url || null,
+            specialization: validatedData.specialization || null,
+            commission_service: validatedData.commission_service,
+            commission_product: validatedData.commission_product
           });
 
         if (error) throw error;
