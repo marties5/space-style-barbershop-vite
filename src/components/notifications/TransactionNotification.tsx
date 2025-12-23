@@ -47,15 +47,19 @@ export function TransactionNotification() {
             description: `Transaksi sebesar ${formattedAmount} berhasil dicatat`,
           });
 
-          // Send browser push notification if tab is not visible
-          if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+          // Send browser push notification (always show, not just when hidden)
+          if ('Notification' in window && Notification.permission === 'granted') {
             try {
-              const notification = new Notification('💰 Transaksi Baru', {
-                body: `Transaksi sebesar ${formattedAmount} telah dibuat`,
+              const now = new Date();
+              const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+              
+              const notification = new Notification('💰 Transaksi Baru Masuk!', {
+                body: `${formattedAmount}\n📅 ${timeStr}\n💳 ${transaction.payment_status === 'completed' ? 'Lunas' : 'Pending'}`,
                 icon: '/pwa-192x192.png',
                 badge: '/pwa-192x192.png',
                 tag: 'transaction-' + transaction.id,
-                requireInteraction: false,
+                requireInteraction: true, // Keep notification until user interacts
+                silent: false, // Play sound
               });
 
               notification.onclick = () => {
@@ -63,8 +67,8 @@ export function TransactionNotification() {
                 notification.close();
               };
 
-              // Auto close after 5 seconds
-              setTimeout(() => notification.close(), 5000);
+              // Auto close after 10 seconds
+              setTimeout(() => notification.close(), 10000);
             } catch (error) {
               console.log('Browser notification error:', error);
             }
