@@ -22,6 +22,7 @@ import {
   Scissors,
   Loader2,
   Download,
+  Banknote,
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -35,6 +36,7 @@ const navItems = [
   { href: "/items", label: "Layanan & Produk", icon: Package, ownerOnly: true },
   { href: "/expenses", label: "Pengeluaran", icon: Receipt },
   { href: "/withdrawals", label: "Withdraw", icon: Wallet },
+  { href: "/cash-register", label: "Setoran Awal", icon: Banknote },
   { href: "/reports", label: "Laporan", icon: BarChart3 },
   { href: "/profile", label: "Profil", icon: User },
   { href: "/install", label: "Install App", icon: Download },

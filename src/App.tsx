@@ -15,6 +15,7 @@ import ItemsManagement from "./pages/ItemsManagement";
 import Reports from "./pages/Reports";
 import Expenses from "./pages/Expenses";
 import Withdrawals from "./pages/Withdrawals";
+import CashRegister from "./pages/CashRegister";
 import Profile from "./pages/Profile";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
@@ -60,6 +61,11 @@ const App = () => (
               <Route path="/withdrawals" element={
                 <ProtectedRoute>
                   <AppLayout><Withdrawals /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/cash-register" element={
+                <ProtectedRoute>
+                  <AppLayout><CashRegister /></AppLayout>
                 </ProtectedRoute>
               } />
               <Route path="/reports" element={
