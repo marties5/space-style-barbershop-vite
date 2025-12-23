@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
         name: "Space Style Barbershop",
         short_name: "Space Style",
         description: "Sistem Manajemen Barbershop",
-        theme_color: "#f97316",
+        theme_color: "#dc2626",
         background_color: "#fafafa",
         display: "standalone",
         orientation: "portrait",

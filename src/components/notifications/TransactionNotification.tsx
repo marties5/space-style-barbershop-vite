@@ -105,7 +105,7 @@ export function TransactionNotification() {
       )
       .subscribe();
 
-    // Also listen for notification_logs for centralized notifications
+    // Also listen for notification_logs for centralized notifications (withdrawal, shop_status)
     const notificationChannel = supabase
       .channel('notification-logs')
       .on(
@@ -122,15 +122,26 @@ export function TransactionNotification() {
             notification_data: { title?: string; body?: string } | null;
           };
 
-          // Send browser notification for non-transaction types (shop_status, withdrawal)
-          if (log.notification_type !== 'transaction' && document.hidden) {
-            if ('Notification' in window && Notification.permission === 'granted' && log.notification_data) {
+          // Show in-app toast for withdrawal and shop_status
+          if (log.notification_type !== 'transaction' && log.notification_data) {
+            // Play sound for all notification types
+            playNotificationSound();
+            
+            // Show in-app toast notification
+            toast({
+              title: log.notification_data.title || 'Notifikasi Baru',
+              description: log.notification_data.body || 'Ada aktivitas baru',
+            });
+
+            // Also send browser push notification
+            if ('Notification' in window && Notification.permission === 'granted') {
               try {
                 const notification = new Notification(log.notification_data.title || 'Notifikasi Baru', {
                   body: log.notification_data.body || 'Ada aktivitas baru',
                   icon: '/pwa-192x192.png',
                   badge: '/pwa-192x192.png',
                   tag: log.notification_type + '-' + log.id,
+                  requireInteraction: log.notification_type === 'shop_status',
                 });
 
                 notification.onclick = () => {
@@ -138,7 +149,7 @@ export function TransactionNotification() {
                   notification.close();
                 };
 
-                setTimeout(() => notification.close(), 5000);
+                setTimeout(() => notification.close(), 8000);
               } catch (error) {
                 console.log('Browser notification error:', error);
               }
