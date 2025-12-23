@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const DAILY_LIMIT = 50;
+const DAILY_LIMIT = 100;
 
 interface PushPayload {
   type: 'transaction' | 'withdrawal' | 'shop_status';
@@ -195,7 +195,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          message: 'Batas notifikasi harian (50) sudah tercapai' 
+          message: 'Batas notifikasi harian (100) sudah tercapai' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
