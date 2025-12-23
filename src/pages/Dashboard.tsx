@@ -5,6 +5,7 @@ import { TrendingUp, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import InitialDepositCard from '@/components/dashboard/InitialDepositCard';
+import MonthlyRevenueChart from '@/components/dashboard/MonthlyRevenueChart';
 
 interface DailyStats {
   totalRevenue: number;
@@ -200,6 +201,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Monthly Revenue Chart */}
+      <MonthlyRevenueChart />
 
       {/* Recent Transactions */}
       <Card>
