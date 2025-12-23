@@ -282,9 +282,17 @@ export default function ItemsManagement() {
                 <TableRow key={service.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Scissors className="h-4 w-4 text-primary" />
-                      </div>
+                      {service.image_url ? (
+                        <img 
+                          src={service.image_url} 
+                          alt={service.name}
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Scissors className="h-5 w-5 text-primary" />
+                        </div>
+                      )}
                       <span className="font-medium">{service.name}</span>
                     </div>
                   </TableCell>
@@ -428,52 +436,50 @@ export default function ItemsManagement() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Image Upload for Products */}
-            {dialogType === 'product' && (
-              <div className="space-y-2">
-                <Label>Gambar Produk</Label>
-                <div className="flex items-center gap-4">
-                  {imagePreview ? (
-                    <div className="relative">
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        className="w-20 h-20 rounded-lg object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setImageFile(null);
-                          setImagePreview(null);
-                        }}
-                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label>Gambar {dialogType === 'service' ? 'Layanan' : 'Produk'}</Label>
+              <div className="flex items-center gap-4">
+                {imagePreview ? (
+                  <div className="relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-20 h-20 rounded-lg object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview(null);
+                      }}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
                     >
-                      <Upload className="h-5 w-5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground mt-1">Upload</span>
-                    </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                  <div className="text-sm text-muted-foreground">
-                    <p>Format: JPG, PNG</p>
-                    <p>Maks: 2MB</p>
+                      <X className="h-3 w-3" />
+                    </button>
                   </div>
+                ) : (
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-20 h-20 rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                  >
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground mt-1">Upload</span>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <div className="text-sm text-muted-foreground">
+                  <p>Format: JPG, PNG</p>
+                  <p>Maks: 2MB</p>
                 </div>
               </div>
-            )}
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="name">Nama {dialogType === 'service' ? 'Layanan' : 'Produk'}</Label>
