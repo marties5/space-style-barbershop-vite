@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Upload, User, Save } from "lucide-react";
+import NotificationSettings from "@/components/notifications/NotificationSettings";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -200,6 +201,9 @@ export default function Profile() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Notification Settings */}
+      <NotificationSettings />
     </div>
   );
 }
