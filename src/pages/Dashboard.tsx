@@ -80,14 +80,35 @@ export default function Dashboard() {
 
     setStats({ totalRevenue, transactionCount, topBarber, topService });
 
-    // Fetch recent transactions
+    // Fetch recent transactions with items to determine type
     const { data: recent } = await supabase
       .from('transactions')
-      .select('*')
+      .select(`
+        *,
+        transaction_items (item_type)
+      `)
       .order('created_at', { ascending: false })
       .limit(5);
     
-    setRecentTransactions(recent || []);
+    // Process transactions to determine type (service/product/mix)
+    const processedTransactions = recent?.map(tx => {
+      const itemTypes = tx.transaction_items?.map((item: any) => item.item_type) || [];
+      const hasService = itemTypes.includes('service');
+      const hasProduct = itemTypes.includes('product');
+      
+      let transactionType = '-';
+      if (hasService && hasProduct) {
+        transactionType = 'Mix';
+      } else if (hasService) {
+        transactionType = 'Layanan';
+      } else if (hasProduct) {
+        transactionType = 'Produk';
+      }
+      
+      return { ...tx, transactionType };
+    }) || [];
+    
+    setRecentTransactions(processedTransactions);
     setIsLoading(false);
   };
 
@@ -188,24 +209,67 @@ export default function Dashboard() {
               Belum ada transaksi hari ini
             </p>
           ) : (
-            <div className="space-y-3">
-              {recentTransactions.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium">{formatCurrency(Number(tx.total_amount))}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(tx.created_at), 'HH:mm')}
-                    </p>
-                  </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    tx.payment_status === 'completed' 
-                      ? 'bg-success/10 text-success' 
-                      : 'bg-warning/10 text-warning'
-                  }`}>
-                    {tx.payment_status === 'completed' ? 'Selesai' : 'Pending'}
-                  </span>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Waktu</th>
+                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Jenis</th>
+                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Pembayaran</th>
+                    <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Total</th>
+                    <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentTransactions.map((tx) => (
+                    <tr key={tx.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <td className="py-3 px-2 text-sm">
+                        {format(new Date(tx.created_at), 'HH:mm')}
+                      </td>
+                      <td className="py-3 px-2">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          tx.transactionType === 'Mix' 
+                            ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                            : tx.transactionType === 'Layanan'
+                            ? 'bg-primary/10 text-primary'
+                            : tx.transactionType === 'Produk'
+                            ? 'bg-accent/50 text-accent-foreground'
+                            : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {tx.transactionType}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          tx.payment_method === 'cash' 
+                            ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                            : tx.payment_method === 'transfer'
+                            ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                            : tx.payment_method === 'qris'
+                            ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                            : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {tx.payment_method === 'cash' ? 'Tunai' : 
+                           tx.payment_method === 'transfer' ? 'Transfer' : 
+                           tx.payment_method === 'qris' ? 'QRIS' : tx.payment_method}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2 text-right font-medium">
+                        {formatCurrency(Number(tx.total_amount))}
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          tx.payment_status === 'completed' 
+                            ? 'bg-success/10 text-success' 
+                            : 'bg-warning/10 text-warning'
+                        }`}>
+                          {tx.payment_status === 'completed' ? 'Selesai' : 'Pending'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
