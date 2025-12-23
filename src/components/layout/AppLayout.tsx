@@ -1,13 +1,13 @@
-import { ReactNode, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  ShoppingCart, 
-  Users, 
-  Package, 
+import { ReactNode, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  Users,
+  Package,
   BarChart3,
   LogOut,
   Menu,
@@ -16,22 +16,22 @@ import {
   Receipt,
   Wallet,
   User,
-  Scissors
-} from 'lucide-react';
+  Scissors,
+} from "lucide-react";
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/transaction', label: 'Transaksi', icon: ShoppingCart },
-  { href: '/barbers', label: 'Barber', icon: Users, ownerOnly: true },
-  { href: '/items', label: 'Layanan & Produk', icon: Package, ownerOnly: true },
-  { href: '/expenses', label: 'Pengeluaran', icon: Receipt },
-  { href: '/withdrawals', label: 'Penarikan', icon: Wallet },
-  { href: '/reports', label: 'Laporan', icon: BarChart3 },
-  { href: '/profile', label: 'Profil', icon: User },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/transaction", label: "Transaksi", icon: ShoppingCart },
+  { href: "/barbers", label: "Barber", icon: Users, ownerOnly: true },
+  { href: "/items", label: "Layanan & Produk", icon: Package, ownerOnly: true },
+  { href: "/expenses", label: "Pengeluaran", icon: Receipt },
+  { href: "/withdrawals", label: "Withdraw", icon: Wallet },
+  { href: "/reports", label: "Laporan", icon: BarChart3 },
+  { href: "/profile", label: "Profil", icon: User },
 ];
 
 export default function AppLayout({ children }: AppLayoutProps) {
@@ -42,10 +42,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    navigate("/auth");
   };
 
-  const filteredNavItems = navItems.filter(item => !item.ownerOnly || isOwner);
+  const filteredNavItems = navItems.filter((item) => !item.ownerOnly || isOwner);
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,11 +61,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </header>
 
       {/* Sidebar */}
-      <aside className={cn(
-        "fixed top-0 left-0 h-full w-64 bg-card border-r z-40 transition-transform duration-300",
-        "lg:translate-x-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
+      <aside
+        className={cn(
+          "fixed top-0 left-0 h-full w-64 bg-card border-r z-40 transition-transform duration-300",
+          "lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="h-16 flex items-center gap-3 px-6 border-b">
@@ -89,9 +91,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                    isActive 
-                      ? "bg-primary text-primary-foreground" 
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                   )}
                 >
                   <item.icon className="h-5 w-5" />
@@ -108,8 +110,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <p className="text-sm font-medium truncate">{user?.email}</p>
               <p className="text-xs text-muted-foreground capitalize">{role}</p>
             </div>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive"
               onClick={handleSignOut}
             >
@@ -122,7 +124,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-30"
           onClick={() => setSidebarOpen(false)}
         />
@@ -130,9 +132,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main Content */}
       <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
-        <div className="p-6">
-          {children}
-        </div>
+        <div className="p-6">{children}</div>
       </main>
     </div>
   );
