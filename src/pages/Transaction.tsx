@@ -469,8 +469,38 @@ export default function Transaction() {
             {/* Cash Payment - Amount Received & Change */}
             {paymentMethod === 'cash' && (
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+                {/* Quick Amount Buttons */}
                 <div className="space-y-2">
-                  <Label htmlFor="modal-cash-received" className="text-sm font-medium">Uang Diterima</Label>
+                  <Label className="text-sm font-medium">Pilih Nominal</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[25000, 30000, 40000, 50000, 100000].map((amount) => (
+                      <Button
+                        key={amount}
+                        type="button"
+                        variant={Number(cashReceived) === amount ? "default" : "outline"}
+                        className="h-12 text-sm font-semibold"
+                        onClick={() => setCashReceived(amount.toString())}
+                      >
+                        {(amount / 1000).toFixed(0)}rb
+                      </Button>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "h-12 text-sm font-semibold",
+                        Number(cashReceived) === total && "border-primary bg-primary/10"
+                      )}
+                      onClick={() => setCashReceived(total.toString())}
+                    >
+                      Uang Pas
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Free Text Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="modal-cash-received" className="text-sm font-medium">Atau Masukkan Manual</Label>
                   <Input
                     id="modal-cash-received"
                     type="number"
@@ -478,9 +508,10 @@ export default function Transaction() {
                     value={cashReceived}
                     onChange={(e) => setCashReceived(e.target.value)}
                     className="text-xl font-bold h-14"
-                    autoFocus
                   />
                 </div>
+
+                {/* Change Display */}
                 {cashReceived && Number(cashReceived) > 0 && (
                   <div className={cn(
                     "flex justify-between items-center p-4 rounded-lg",
