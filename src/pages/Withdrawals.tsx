@@ -32,7 +32,6 @@ import { toast } from "sonner";
 import { Plus, Trash2, Wallet } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
-import { sendPushNotification } from "@/hooks/usePushNotification";
 
 export default function Withdrawals() {
   const { user, isOwner } = useAuth();
@@ -81,18 +80,6 @@ export default function Withdrawals() {
       if (error) throw error;
     },
     onSuccess: () => {
-      const selectedBarber = barbers?.find(b => b.id === barberId);
-      const barberName = selectedBarber?.name || 'Barber';
-      const withdrawAmount = parseFloat(amount);
-      
-      // Send push notification
-      sendPushNotification(
-        'withdrawal',
-        '💸 Penarikan Dana',
-        `${barberName} menarik dana Rp ${withdrawAmount.toLocaleString('id-ID')}`,
-        { barberId, barberName, amount: withdrawAmount }
-      );
-      
       queryClient.invalidateQueries({ queryKey: ["withdrawals"] });
       toast.success("Penarikan berhasil dicatat");
       resetForm();

@@ -154,30 +154,6 @@ export type Database = {
         }
         Relationships: []
       }
-      notification_logs: {
-        Row: {
-          id: string
-          notification_data: Json | null
-          notification_type: string
-          recipients_count: number | null
-          sent_at: string
-        }
-        Insert: {
-          id?: string
-          notification_data?: Json | null
-          notification_type: string
-          recipients_count?: number | null
-          sent_at?: string
-        }
-        Update: {
-          id?: string
-          notification_data?: Json | null
-          notification_type?: string
-          recipients_count?: number | null
-          sent_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -205,33 +181,6 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      push_subscriptions: {
-        Row: {
-          auth: string
-          created_at: string
-          endpoint: string
-          id: string
-          p256dh: string
-          user_id: string | null
-        }
-        Insert: {
-          auth: string
-          created_at?: string
-          endpoint: string
-          id?: string
-          p256dh: string
-          user_id?: string | null
-        }
-        Update: {
-          auth?: string
-          created_at?: string
-          endpoint?: string
-          id?: string
-          p256dh?: string
-          user_id?: string | null
         }
         Relationships: []
       }
