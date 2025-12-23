@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { sendPushNotification } from './usePushNotification';
 
 interface ShopStatusContextType {
   isOpen: boolean;
@@ -101,6 +102,14 @@ export function ShopStatusProvider({ children }: { children: ReactNode }) {
 
       if (logError) console.error('Error logging shop open:', logError);
 
+      // Send push notification
+      sendPushNotification(
+        'shop_status',
+        '🟢 Toko Dibuka',
+        `${userName} membuka toko pada ${new Date().toLocaleTimeString('id-ID')}`,
+        { action: 'open', userName }
+      );
+
       setIsOpen(true);
       toast.success('Toko berhasil dibuka!');
     } catch (error) {
@@ -137,6 +146,14 @@ export function ShopStatusProvider({ children }: { children: ReactNode }) {
         });
 
       if (logError) console.error('Error logging shop close:', logError);
+
+      // Send push notification
+      sendPushNotification(
+        'shop_status',
+        '🔴 Toko Ditutup',
+        `${userName} menutup toko pada ${new Date().toLocaleTimeString('id-ID')}`,
+        { action: 'close', userName }
+      );
 
       setIsOpen(false);
       toast.success('Toko berhasil ditutup!');

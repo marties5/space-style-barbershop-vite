@@ -10,6 +10,7 @@ import { Scissors, Package, User, Trash2, Plus, Minus, ShoppingCart, CreditCard,
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { sendPushNotification } from '@/hooks/usePushNotification';
 
 interface Item {
   id: string;
@@ -165,6 +166,15 @@ export default function Transaction() {
         .insert(transactionItems);
 
       if (itemsError) throw itemsError;
+
+      // Send push notification
+      const itemNames = cart.map(c => c.item.name).join(', ');
+      sendPushNotification(
+        'transaction',
+        '💰 Transaksi Baru',
+        `Transaksi ${formatCurrency(total)} (${paymentMethod.toUpperCase()}) - ${itemNames}`,
+        { transactionId: transaction.id, total, paymentMethod }
+      );
 
       toast.success(`Transaksi berhasil! Total: ${formatCurrency(total)} (${paymentMethod.toUpperCase()})`);
       setCart([]);
