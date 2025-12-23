@@ -11,11 +11,11 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Transaction from "./pages/Transaction";
 import Barbers from "./pages/Barbers";
-import Services from "./pages/Services";
-import Products from "./pages/Products";
+import ItemsManagement from "./pages/ItemsManagement";
 import Reports from "./pages/Reports";
 import Expenses from "./pages/Expenses";
 import Withdrawals from "./pages/Withdrawals";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,14 +46,9 @@ const App = () => (
                 <AppLayout><Barbers /></AppLayout>
               </ProtectedRoute>
             } />
-            <Route path="/services" element={
+            <Route path="/items" element={
               <ProtectedRoute requireOwner>
-                <AppLayout><Services /></AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/products" element={
-              <ProtectedRoute requireOwner>
-                <AppLayout><Products /></AppLayout>
+                <AppLayout><ItemsManagement /></AppLayout>
               </ProtectedRoute>
             } />
             <Route path="/expenses" element={
@@ -69,6 +64,11 @@ const App = () => (
             <Route path="/reports" element={
               <ProtectedRoute>
                 <AppLayout><Reports /></AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <AppLayout><Profile /></AppLayout>
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />

@@ -120,6 +120,7 @@ export type Database = {
           cost_price: number | null
           created_at: string
           id: string
+          image_url: string | null
           is_active: boolean
           name: string
           price: number
@@ -131,6 +132,7 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           name: string
           price?: number
@@ -142,6 +144,7 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           name?: string
           price?: number
@@ -153,6 +156,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           email: string | null
           full_name: string | null
@@ -161,6 +165,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -169,6 +174,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
