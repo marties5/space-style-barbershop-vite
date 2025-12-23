@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { format, startOfDay, endOfDay, subDays } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { format, subDays } from 'date-fns';
 import { Calendar, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { BarberDetailReport } from '@/components/reports/BarberDetailReport';
 
 interface BarberReport {
   barber_name: string;
@@ -119,99 +119,112 @@ export default function Reports() {
         </CardContent>
       </Card>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Pendapatan
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="overview">Ringkasan</TabsTrigger>
+          <TabsTrigger value="barber-detail">Detail per Barber</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Jumlah Transaksi
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{transactionCount}</div>
-          </CardContent>
-        </Card>
+        <TabsContent value="overview" className="space-y-6">
+          {/* Summary Cards */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Pendapatan
+                </CardTitle>
+                <DollarSign className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Rata-rata per Transaksi
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(transactionCount > 0 ? totalRevenue / transactionCount : 0)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Jumlah Transaksi
+                </CardTitle>
+                <TrendingUp className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{transactionCount}</div>
+              </CardContent>
+            </Card>
 
-      {/* Barber Performance */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Performa Barber
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Memuat data...</div>
-          ) : barberReports.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Tidak ada data untuk periode ini
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama Barber</TableHead>
-                  <TableHead className="text-right">Jumlah Layanan</TableHead>
-                  <TableHead className="text-right">Total Pendapatan</TableHead>
-                  <TableHead className="text-right">Total Komisi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {barberReports.map((report, index) => (
-                  <TableRow key={report.barber_name}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {index + 1}
-                        </div>
-                        <span className="font-medium">{report.barber_name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">{report.service_count}</TableCell>
-                    <TableCell className="text-right font-medium text-primary">
-                      {formatCurrency(report.total_revenue)}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {formatCurrency(report.total_commission)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Rata-rata per Transaksi
+                </CardTitle>
+                <DollarSign className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(transactionCount > 0 ? totalRevenue / transactionCount : 0)}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Barber Performance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Performa Barber
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Memuat data...</div>
+              ) : barberReports.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Tidak ada data untuk periode ini
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nama Barber</TableHead>
+                      <TableHead className="text-right">Jumlah Layanan</TableHead>
+                      <TableHead className="text-right">Total Pendapatan</TableHead>
+                      <TableHead className="text-right">Total Komisi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {barberReports.map((report, index) => (
+                      <TableRow key={report.barber_name}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                              index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <span className="font-medium">{report.barber_name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">{report.service_count}</TableCell>
+                        <TableCell className="text-right font-medium text-primary">
+                          {formatCurrency(report.total_revenue)}
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {formatCurrency(report.total_commission)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="barber-detail">
+          <BarberDetailReport dateFrom={dateFrom} dateTo={dateTo} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
