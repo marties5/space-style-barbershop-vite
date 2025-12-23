@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format, subDays } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { Calendar, TrendingUp, Users, DollarSign, Receipt, Wallet, TrendingDown, Banknote, Smartphone, CreditCard } from 'lucide-react';
 import { BarberDetailReport } from '@/components/reports/BarberDetailReport';
 
@@ -27,9 +35,14 @@ interface PaymentMethodReport {
   count: number;
 }
 
+type FilterType = 'custom' | 'today' | 'week' | 'month' | 'year';
+
 export default function Reports() {
+  const [filterType, setFilterType] = useState<FilterType>('week');
   const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 7), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
+  const [selectedYear, setSelectedYear] = useState(format(new Date(), 'yyyy'));
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [transactionCount, setTransactionCount] = useState(0);
   const [barberReports, setBarberReports] = useState<BarberReport[]>([]);
@@ -39,21 +52,49 @@ export default function Reports() {
   const [expensesByCategory, setExpensesByCategory] = useState<ExpenseReport[]>([]);
   const [paymentMethodReports, setPaymentMethodReports] = useState<PaymentMethodReport[]>([]);
 
+  // Calculate effective date range based on filter type
+  const getDateRange = () => {
+    const now = new Date();
+    switch (filterType) {
+      case 'today':
+        const today = format(now, 'yyyy-MM-dd');
+        return { start: today, end: today };
+      case 'week':
+        return { start: format(subDays(now, 7), 'yyyy-MM-dd'), end: format(now, 'yyyy-MM-dd') };
+      case 'month':
+        const monthDate = new Date(selectedMonth + '-01');
+        return {
+          start: format(startOfMonth(monthDate), 'yyyy-MM-dd'),
+          end: format(endOfMonth(monthDate), 'yyyy-MM-dd')
+        };
+      case 'year':
+        const yearDate = new Date(parseInt(selectedYear), 0, 1);
+        return {
+          start: format(startOfYear(yearDate), 'yyyy-MM-dd'),
+          end: format(endOfYear(yearDate), 'yyyy-MM-dd')
+        };
+      case 'custom':
+      default:
+        return { start: dateFrom, end: dateTo };
+    }
+  };
+
   useEffect(() => {
     fetchReports();
-  }, [dateFrom, dateTo]);
+  }, [filterType, dateFrom, dateTo, selectedMonth, selectedYear]);
 
   const fetchReports = async () => {
     setIsLoading(true);
-    const start = `${dateFrom}T00:00:00`;
-    const end = `${dateTo}T23:59:59`;
+    const { start, end } = getDateRange();
+    const startTime = `${start}T00:00:00`;
+    const endTime = `${end}T23:59:59`;
 
     // Fetch transactions
     const { data: transactions } = await supabase
       .from('transactions')
       .select('*')
-      .gte('created_at', start)
-      .lte('created_at', end)
+      .gte('created_at', startTime)
+      .lte('created_at', endTime)
       .eq('payment_status', 'completed');
 
     setTotalRevenue(transactions?.reduce((sum, t) => sum + Number(t.total_amount), 0) || 0);
@@ -76,8 +117,8 @@ export default function Reports() {
         *,
         barbers:barber_id (name)
       `)
-      .gte('created_at', start)
-      .lte('created_at', end)
+      .gte('created_at', startTime)
+      .lte('created_at', endTime)
       .eq('item_type', 'service');
 
     // Aggregate by barber
@@ -105,8 +146,8 @@ export default function Reports() {
     const { data: expenses } = await supabase
       .from('expenses')
       .select('*')
-      .gte('created_at', start)
-      .lte('created_at', end);
+      .gte('created_at', startTime)
+      .lte('created_at', endTime);
 
     setTotalExpenses(expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0);
 
@@ -125,8 +166,8 @@ export default function Reports() {
     const { data: withdrawals } = await supabase
       .from('barber_withdrawals')
       .select('*')
-      .gte('created_at', start)
-      .lte('created_at', end);
+      .gte('created_at', startTime)
+      .lte('created_at', endTime);
 
     setTotalWithdrawals(withdrawals?.reduce((sum, w) => sum + Number(w.amount), 0) || 0);
 
@@ -156,21 +197,100 @@ export default function Reports() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Periode:</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="w-auto"
-              />
-              <span className="text-muted-foreground">-</span>
-              <Input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="w-auto"
-              />
+            
+            {/* Filter Type Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={filterType === 'today' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterType('today')}
+              >
+                Hari Ini
+              </Button>
+              <Button
+                variant={filterType === 'week' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterType('week')}
+              >
+                7 Hari
+              </Button>
+              <Button
+                variant={filterType === 'month' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterType('month')}
+              >
+                Bulanan
+              </Button>
+              <Button
+                variant={filterType === 'year' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterType('year')}
+              >
+                Tahunan
+              </Button>
+              <Button
+                variant={filterType === 'custom' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterType('custom')}
+              >
+                Custom
+              </Button>
             </div>
+          </div>
+
+          {/* Conditional Filter Inputs */}
+          <div className="mt-4">
+            {filterType === 'month' && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Pilih Bulan:</span>
+                <Input
+                  type="month"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="w-auto"
+                />
+              </div>
+            )}
+
+            {filterType === 'year' && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Pilih Tahun:</span>
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 5 }, (_, i) => {
+                      const year = new Date().getFullYear() - i;
+                      return (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {filterType === 'custom' && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Rentang:</span>
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="w-auto"
+                />
+                <span className="text-muted-foreground">-</span>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="w-auto"
+                />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -373,7 +493,7 @@ export default function Reports() {
         </TabsContent>
 
         <TabsContent value="barber-detail">
-          <BarberDetailReport dateFrom={dateFrom} dateTo={dateTo} />
+          <BarberDetailReport dateFrom={getDateRange().start} dateTo={getDateRange().end} />
         </TabsContent>
 
         <TabsContent value="operational" className="space-y-6">
