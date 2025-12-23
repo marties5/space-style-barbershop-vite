@@ -22,6 +22,7 @@ import {
   Scissors,
   Loader2,
   Bell,
+  Download,
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -38,6 +39,7 @@ const navItems = [
   { href: "/reports", label: "Laporan", icon: BarChart3 },
   { href: "/notifications", label: "Notifikasi", icon: Bell, ownerOnly: true },
   { href: "/profile", label: "Profil", icon: User },
+  { href: "/install", label: "Install App", icon: Download },
 ];
 
 export default function AppLayout({ children }: AppLayoutProps) {
