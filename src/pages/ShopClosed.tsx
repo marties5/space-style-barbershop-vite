@@ -3,15 +3,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Store, Power, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function ShopClosed() {
   const { openShop } = useShopStatus();
   const [isOpening, setIsOpening] = useState(false);
+  const navigate = useNavigate();
 
   const handleOpen = async () => {
     setIsOpening(true);
     await openShop();
     setIsOpening(false);
+    navigate('/transaction');
   };
 
   return (

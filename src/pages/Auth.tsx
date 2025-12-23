@@ -44,7 +44,7 @@ export default function Auth() {
         : error.message);
     } else {
       toast.success('Login berhasil!');
-      navigate('/dashboard');
+      navigate('/transaction');
     }
     setIsLoading(false);
   };
@@ -82,7 +82,7 @@ export default function Auth() {
       }
     } else {
       toast.success('Registrasi berhasil! Silakan login.');
-      navigate('/dashboard');
+      navigate('/transaction');
     }
     setIsLoading(false);
   };
