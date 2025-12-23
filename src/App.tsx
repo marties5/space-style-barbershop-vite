@@ -14,6 +14,8 @@ import Barbers from "./pages/Barbers";
 import Services from "./pages/Services";
 import Products from "./pages/Products";
 import Reports from "./pages/Reports";
+import Expenses from "./pages/Expenses";
+import Withdrawals from "./pages/Withdrawals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,16 @@ const App = () => (
             <Route path="/products" element={
               <ProtectedRoute requireOwner>
                 <AppLayout><Products /></AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/expenses" element={
+              <ProtectedRoute>
+                <AppLayout><Expenses /></AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/withdrawals" element={
+              <ProtectedRoute>
+                <AppLayout><Withdrawals /></AppLayout>
               </ProtectedRoute>
             } />
             <Route path="/reports" element={

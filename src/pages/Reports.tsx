@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, subDays } from 'date-fns';
-import { Calendar, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { Calendar, TrendingUp, Users, DollarSign, Receipt, Wallet, TrendingDown } from 'lucide-react';
 import { BarberDetailReport } from '@/components/reports/BarberDetailReport';
 
 interface BarberReport {
@@ -15,6 +15,12 @@ interface BarberReport {
   total_commission: number;
 }
 
+interface ExpenseReport {
+  category: string;
+  total: number;
+  count: number;
+}
+
 export default function Reports() {
   const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 7), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -22,6 +28,9 @@ export default function Reports() {
   const [transactionCount, setTransactionCount] = useState(0);
   const [barberReports, setBarberReports] = useState<BarberReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const [totalWithdrawals, setTotalWithdrawals] = useState(0);
+  const [expensesByCategory, setExpensesByCategory] = useState<ExpenseReport[]>([]);
 
   useEffect(() => {
     fetchReports();
@@ -74,6 +83,36 @@ export default function Reports() {
     });
 
     setBarberReports(Object.values(barberData).sort((a, b) => b.total_revenue - a.total_revenue));
+
+    // Fetch expenses
+    const { data: expenses } = await supabase
+      .from('expenses')
+      .select('*')
+      .gte('created_at', start)
+      .lte('created_at', end);
+
+    setTotalExpenses(expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0);
+
+    // Group expenses by category
+    const expenseData: Record<string, ExpenseReport> = {};
+    expenses?.forEach(expense => {
+      if (!expenseData[expense.category]) {
+        expenseData[expense.category] = { category: expense.category, total: 0, count: 0 };
+      }
+      expenseData[expense.category].total += Number(expense.amount);
+      expenseData[expense.category].count += 1;
+    });
+    setExpensesByCategory(Object.values(expenseData).sort((a, b) => b.total - a.total));
+
+    // Fetch withdrawals
+    const { data: withdrawals } = await supabase
+      .from('barber_withdrawals')
+      .select('*')
+      .gte('created_at', start)
+      .lte('created_at', end);
+
+    setTotalWithdrawals(withdrawals?.reduce((sum, w) => sum + Number(w.amount), 0) || 0);
+
     setIsLoading(false);
   };
 
@@ -120,9 +159,10 @@ export default function Reports() {
       </Card>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">Ringkasan</TabsTrigger>
           <TabsTrigger value="barber-detail">Detail per Barber</TabsTrigger>
+          <TabsTrigger value="operational">Laporan Operasional</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -223,6 +263,110 @@ export default function Reports() {
 
         <TabsContent value="barber-detail">
           <BarberDetailReport dateFrom={dateFrom} dateTo={dateTo} />
+        </TabsContent>
+
+        <TabsContent value="operational" className="space-y-6">
+          {/* Operational Summary Cards */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Pendapatan
+                </CardTitle>
+                <DollarSign className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Pengeluaran
+                </CardTitle>
+                <Receipt className="h-4 w-4 text-destructive" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-destructive">{formatCurrency(totalExpenses)}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Penarikan Barber
+                </CardTitle>
+                <Wallet className="h-4 w-4 text-orange-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-500">{formatCurrency(totalWithdrawals)}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Laba Bersih
+                </CardTitle>
+                <TrendingDown className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${(totalRevenue - totalExpenses - totalWithdrawals) >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                  {formatCurrency(totalRevenue - totalExpenses - totalWithdrawals)}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Expenses by Category */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="h-5 w-5" />
+                Pengeluaran per Kategori
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Memuat data...</div>
+              ) : expensesByCategory.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Tidak ada data pengeluaran untuk periode ini
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Kategori</TableHead>
+                      <TableHead className="text-right">Jumlah Transaksi</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {expensesByCategory.map((expense) => (
+                      <TableRow key={expense.category}>
+                        <TableCell className="font-medium capitalize">{expense.category}</TableCell>
+                        <TableCell className="text-right">{expense.count}</TableCell>
+                        <TableCell className="text-right text-destructive">
+                          {formatCurrency(expense.total)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="font-bold">
+                      <TableCell>Total</TableCell>
+                      <TableCell className="text-right">
+                        {expensesByCategory.reduce((sum, e) => sum + e.count, 0)}
+                      </TableCell>
+                      <TableCell className="text-right text-destructive">
+                        {formatCurrency(totalExpenses)}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

@@ -13,7 +13,9 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Receipt,
+  Wallet
 } from 'lucide-react';
 
 interface AppLayoutProps {
@@ -26,6 +28,8 @@ const navItems = [
   { href: '/barbers', label: 'Barber', icon: Users, ownerOnly: true },
   { href: '/services', label: 'Layanan', icon: Scissors, ownerOnly: true },
   { href: '/products', label: 'Produk', icon: Package, ownerOnly: true },
+  { href: '/expenses', label: 'Pengeluaran', icon: Receipt },
+  { href: '/withdrawals', label: 'Penarikan', icon: Wallet },
   { href: '/reports', label: 'Laporan', icon: BarChart3 },
 ];
 
