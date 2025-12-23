@@ -7,7 +7,6 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ShopStatusProvider } from "@/hooks/useShopStatus";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
-import { TransactionNotification } from "@/components/notifications/TransactionNotification";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Transaction from "./pages/Transaction";
@@ -17,7 +16,6 @@ import Reports from "./pages/Reports";
 import Expenses from "./pages/Expenses";
 import Withdrawals from "./pages/Withdrawals";
 import Profile from "./pages/Profile";
-import NotificationHistory from "./pages/NotificationHistory";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
@@ -31,7 +29,6 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ShopStatusProvider>
-            <TransactionNotification />
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/auth" element={<Auth />} />
@@ -73,11 +70,6 @@ const App = () => (
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <AppLayout><Profile /></AppLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/notifications" element={
-                <ProtectedRoute>
-                  <AppLayout><NotificationHistory /></AppLayout>
                 </ProtectedRoute>
               } />
               <Route path="/install" element={<Install />} />

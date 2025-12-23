@@ -21,7 +21,6 @@ import {
   User,
   Scissors,
   Loader2,
-  Bell,
   Download,
 } from "lucide-react";
 
@@ -37,7 +36,6 @@ const navItems = [
   { href: "/expenses", label: "Pengeluaran", icon: Receipt },
   { href: "/withdrawals", label: "Withdraw", icon: Wallet },
   { href: "/reports", label: "Laporan", icon: BarChart3 },
-  { href: "/notifications", label: "Notifikasi", icon: Bell, ownerOnly: true },
   { href: "/profile", label: "Profil", icon: User },
   { href: "/install", label: "Install App", icon: Download },
 ];
