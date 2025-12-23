@@ -1,9 +1,34 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// Notification sound URL (free sound effect)
+const NOTIFICATION_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
+
 export function TransactionNotification() {
   const { toast } = useToast();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio element
+  useEffect(() => {
+    audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
+    audioRef.current.volume = 0.5;
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const playNotificationSound = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(err => {
+        console.log('Could not play notification sound:', err);
+      });
+    }
+  }, []);
   const lastNotifiedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -40,6 +65,9 @@ export function TransactionNotification() {
             currency: 'IDR',
             minimumFractionDigits: 0
           }).format(transaction.total_amount);
+
+          // Play notification sound
+          playNotificationSound();
 
           // Show in-app toast notification
           toast({
@@ -124,7 +152,7 @@ export function TransactionNotification() {
       supabase.removeChannel(channel);
       supabase.removeChannel(notificationChannel);
     };
-  }, [toast]);
+  }, [toast, playNotificationSound]);
 
   return null;
 }
