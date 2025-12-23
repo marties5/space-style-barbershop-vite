@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      barber_withdrawals: {
+        Row: {
+          amount: number
+          barber_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number
+          barber_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          barber_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_withdrawals_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barbers: {
         Row: {
           commission_product: number
@@ -47,6 +82,36 @@ export type Database = {
           photo_url?: string | null
           specialization?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          id: string
+          notes: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          notes?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
