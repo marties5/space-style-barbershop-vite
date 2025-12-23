@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, subDays } from 'date-fns';
-import { Calendar, TrendingUp, Users, DollarSign, Receipt, Wallet, TrendingDown } from 'lucide-react';
+import { Calendar, TrendingUp, Users, DollarSign, Receipt, Wallet, TrendingDown, Banknote, Smartphone, CreditCard } from 'lucide-react';
 import { BarberDetailReport } from '@/components/reports/BarberDetailReport';
 
 interface BarberReport {
@@ -21,6 +21,12 @@ interface ExpenseReport {
   count: number;
 }
 
+interface PaymentMethodReport {
+  method: string;
+  total: number;
+  count: number;
+}
+
 export default function Reports() {
   const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 7), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -31,6 +37,7 @@ export default function Reports() {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalWithdrawals, setTotalWithdrawals] = useState(0);
   const [expensesByCategory, setExpensesByCategory] = useState<ExpenseReport[]>([]);
+  const [paymentMethodReports, setPaymentMethodReports] = useState<PaymentMethodReport[]>([]);
 
   useEffect(() => {
     fetchReports();
@@ -52,7 +59,17 @@ export default function Reports() {
     setTotalRevenue(transactions?.reduce((sum, t) => sum + Number(t.total_amount), 0) || 0);
     setTransactionCount(transactions?.length || 0);
 
-    // Fetch transaction items for barber reports
+    // Group by payment method
+    const paymentData: Record<string, PaymentMethodReport> = {};
+    transactions?.forEach(tx => {
+      const method = tx.payment_method || 'cash';
+      if (!paymentData[method]) {
+        paymentData[method] = { method, total: 0, count: 0 };
+      }
+      paymentData[method].total += Number(tx.total_amount);
+      paymentData[method].count += 1;
+    });
+    setPaymentMethodReports(Object.values(paymentData).sort((a, b) => b.total - a.total));
     const { data: items } = await supabase
       .from('transaction_items')
       .select(`
@@ -160,9 +177,10 @@ export default function Reports() {
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="flex-wrap h-auto">
-          <TabsTrigger value="overview">Ringkasan</TabsTrigger>
-          <TabsTrigger value="barber-detail">Detail per Barber</TabsTrigger>
-          <TabsTrigger value="operational">Laporan Operasional</TabsTrigger>
+        <TabsTrigger value="overview">Ringkasan</TabsTrigger>
+        <TabsTrigger value="payment-method">Metode Pembayaran</TabsTrigger>
+        <TabsTrigger value="barber-detail">Detail per Barber</TabsTrigger>
+        <TabsTrigger value="operational">Laporan Operasional</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -254,6 +272,99 @@ export default function Reports() {
                         </TableCell>
                       </TableRow>
                     ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="payment-method" className="space-y-6">
+          {/* Payment Method Summary Cards */}
+          <div className="grid gap-4 md:grid-cols-3">
+            {paymentMethodReports.map((pm) => {
+              const getIcon = () => {
+                switch (pm.method) {
+                  case 'qris': return <Smartphone className="h-4 w-4 text-purple-500" />;
+                  case 'transfer': return <CreditCard className="h-4 w-4 text-blue-500" />;
+                  default: return <Banknote className="h-4 w-4 text-green-500" />;
+                }
+              };
+              const getColor = () => {
+                switch (pm.method) {
+                  case 'qris': return 'text-purple-500';
+                  case 'transfer': return 'text-blue-500';
+                  default: return 'text-green-500';
+                }
+              };
+              return (
+                <Card key={pm.method}>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase">
+                      {pm.method}
+                    </CardTitle>
+                    {getIcon()}
+                  </CardHeader>
+                  <CardContent>
+                    <div className={`text-2xl font-bold ${getColor()}`}>{formatCurrency(pm.total)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">{pm.count} transaksi</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+            {paymentMethodReports.length === 0 && !isLoading && (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                Tidak ada data transaksi untuk periode ini
+              </div>
+            )}
+          </div>
+
+          {/* Payment Method Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Detail Metode Pembayaran
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Memuat data...</div>
+              ) : paymentMethodReports.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Tidak ada data untuk periode ini
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Metode</TableHead>
+                      <TableHead className="text-right">Jumlah Transaksi</TableHead>
+                      <TableHead className="text-right">Total Pendapatan</TableHead>
+                      <TableHead className="text-right">Persentase</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paymentMethodReports.map((pm) => (
+                      <TableRow key={pm.method}>
+                        <TableCell className="font-medium uppercase">{pm.method}</TableCell>
+                        <TableCell className="text-right">{pm.count}</TableCell>
+                        <TableCell className="text-right font-medium text-primary">
+                          {formatCurrency(pm.total)}
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {totalRevenue > 0 ? ((pm.total / totalRevenue) * 100).toFixed(1) : 0}%
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="font-bold">
+                      <TableCell>Total</TableCell>
+                      <TableCell className="text-right">{transactionCount}</TableCell>
+                      <TableCell className="text-right text-primary">
+                        {formatCurrency(totalRevenue)}
+                      </TableCell>
+                      <TableCell className="text-right">100%</TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
               )}

@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Scissors, Package, User, Trash2, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Scissors, Package, User, Trash2, Plus, Minus, ShoppingCart, CreditCard, Banknote, Smartphone } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 interface Item {
@@ -39,6 +41,7 @@ export default function Transaction() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [barberModalOpen, setBarberModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris' | 'transfer'>('cash');
   
 
   useEffect(() => {
@@ -125,7 +128,8 @@ export default function Transaction() {
         .insert({
           user_id: user?.id,
           total_amount: total,
-          payment_status: 'completed'
+          payment_status: 'completed',
+          payment_method: paymentMethod
         })
         .select()
         .single();
@@ -160,8 +164,9 @@ export default function Transaction() {
 
       if (itemsError) throw itemsError;
 
-      toast.success(`Transaksi berhasil! Total: ${formatCurrency(total)}`);
+      toast.success(`Transaksi berhasil! Total: ${formatCurrency(total)} (${paymentMethod.toUpperCase()})`);
       setCart([]);
+      setPaymentMethod('cash');
       fetchData(); // Refresh stock
     } catch (error: any) {
       toast.error(error.message || 'Gagal menyimpan transaksi');
@@ -339,8 +344,49 @@ export default function Transaction() {
                   ))}
                 </div>
 
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center mb-4">
+                <div className="border-t pt-4 space-y-4">
+                  {/* Payment Method Selection */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Metode Pembayaran</Label>
+                    <RadioGroup
+                      value={paymentMethod}
+                      onValueChange={(value) => setPaymentMethod(value as 'cash' | 'qris' | 'transfer')}
+                      className="grid grid-cols-3 gap-2"
+                    >
+                      <div>
+                        <RadioGroupItem value="cash" id="cash" className="peer sr-only" />
+                        <Label
+                          htmlFor="cash"
+                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
+                        >
+                          <Banknote className="h-5 w-5 mb-1" />
+                          <span className="text-xs font-medium">Cash</span>
+                        </Label>
+                      </div>
+                      <div>
+                        <RadioGroupItem value="qris" id="qris" className="peer sr-only" />
+                        <Label
+                          htmlFor="qris"
+                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
+                        >
+                          <Smartphone className="h-5 w-5 mb-1" />
+                          <span className="text-xs font-medium">QRIS</span>
+                        </Label>
+                      </div>
+                      <div>
+                        <RadioGroupItem value="transfer" id="transfer" className="peer sr-only" />
+                        <Label
+                          htmlFor="transfer"
+                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
+                        >
+                          <CreditCard className="h-5 w-5 mb-1" />
+                          <span className="text-xs font-medium">Transfer</span>
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="flex justify-between items-center">
                     <span className="font-medium">Total</span>
                     <span className="text-xl font-bold text-primary">
                       {formatCurrency(total)}
