@@ -198,140 +198,124 @@ export default function Transaction() {
         {/* Items Grid */}
         <div className="lg:col-span-2 space-y-6">
           {/* Layanan Section */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-primary/5 border-b pb-4">
-              <CardTitle className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Scissors className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="font-semibold text-lg">Layanan</h2>
-                  <p className="text-sm text-muted-foreground font-normal">{services.length} layanan tersedia</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {services.map(item => (
-                  <div 
-                    key={item.id}
-                    className="flex items-center gap-4 p-3 rounded-xl border-2 border-transparent hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer group"
-                    onClick={() => handleItemClick(item)}
-                  >
-                    <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {item.image_url ? (
-                        <img 
-                          src={item.image_url} 
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Scissors className="h-6 w-6 text-primary/40" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Scissors className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-lg">Layanan</h2>
+                <p className="text-sm text-muted-foreground">{services.length} layanan tersedia</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {services.map(item => (
+                <Card 
+                  key={item.id}
+                  className="overflow-hidden hover:shadow-lg transition-all hover:scale-[1.02]"
+                >
+                  <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
+                    {item.image_url ? (
+                      <img 
+                        src={item.image_url} 
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Scissors className="h-12 w-12 text-primary/30" />
+                    )}
+                  </div>
+                  <CardContent className="p-4 space-y-3">
+                    <div>
                       <h3 className="font-medium truncate">{item.name}</h3>
                       <p className="text-lg font-bold text-primary">
                         {formatCurrency(item.price)}
                       </p>
                     </div>
                     <Button 
-                      size="sm" 
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleItemClick(item);
-                      }}
+                      className="w-full"
+                      onClick={() => handleItemClick(item)}
                     >
-                      <Plus className="h-4 w-4 mr-1" />
+                      <Plus className="h-4 w-4 mr-2" />
                       Pilih
                     </Button>
-                  </div>
-                ))}
-                {services.length === 0 && (
-                  <div className="col-span-full text-center py-8 text-muted-foreground">
-                    Belum ada layanan
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  </CardContent>
+                </Card>
+              ))}
+              {services.length === 0 && (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  Belum ada layanan
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Produk Section */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-accent/30 border-b pb-4">
-              <CardTitle className="flex items-center gap-3">
-                <div className="p-2 bg-accent rounded-lg">
-                  <Package className="h-5 w-5 text-accent-foreground" />
-                </div>
-                <div>
-                  <h2 className="font-semibold text-lg">Produk</h2>
-                  <p className="text-sm text-muted-foreground font-normal">{products.length} produk tersedia</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {products.map(item => (
-                  <div 
-                    key={item.id}
-                    className={cn(
-                      "flex items-center gap-4 p-3 rounded-xl border-2 border-transparent hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer group",
-                      (item.stock || 0) <= 0 && "opacity-50 pointer-events-none bg-muted/50"
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-accent rounded-lg">
+                <Package className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-lg">Produk</h2>
+                <p className="text-sm text-muted-foreground">{products.length} produk tersedia</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {products.map(item => (
+                <Card 
+                  key={item.id}
+                  className={cn(
+                    "overflow-hidden hover:shadow-lg transition-all hover:scale-[1.02]",
+                    (item.stock || 0) <= 0 && "opacity-50"
+                  )}
+                >
+                  <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden relative">
+                    {item.image_url ? (
+                      <img 
+                        src={item.image_url} 
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Package className="h-12 w-12 text-accent-foreground/30" />
                     )}
-                    onClick={() => handleItemClick(item)}
-                  >
-                    <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 relative">
-                      {item.image_url ? (
-                        <img 
-                          src={item.image_url} 
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Package className="h-6 w-6 text-accent-foreground/40" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
+                    <span className={cn(
+                      "absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-full",
+                      (item.stock || 0) > 5 
+                        ? "bg-green-500 text-white" 
+                        : (item.stock || 0) > 0 
+                          ? "bg-orange-500 text-white"
+                          : "bg-destructive text-destructive-foreground"
+                    )}>
+                      Stok: {item.stock || 0}
+                    </span>
+                  </div>
+                  <CardContent className="p-4 space-y-3">
+                    <div>
                       <h3 className="font-medium truncate">{item.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <p className="text-lg font-bold text-primary">
-                          {formatCurrency(item.price)}
-                        </p>
-                        <span className={cn(
-                          "text-xs px-2 py-0.5 rounded-full",
-                          (item.stock || 0) > 5 
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
-                            : (item.stock || 0) > 0 
-                              ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                              : "bg-destructive/10 text-destructive"
-                        )}>
-                          Stok: {item.stock || 0}
-                        </span>
-                      </div>
+                      <p className="text-lg font-bold text-primary">
+                        {formatCurrency(item.price)}
+                      </p>
                     </div>
                     <Button 
-                      size="sm" 
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="w-full"
                       disabled={(item.stock || 0) <= 0}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleItemClick(item);
-                      }}
+                      onClick={() => handleItemClick(item)}
                     >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Pilih
+                      <Plus className="h-4 w-4 mr-2" />
+                      {(item.stock || 0) <= 0 ? 'Habis' : 'Pilih'}
                     </Button>
-                  </div>
-                ))}
-                {products.length === 0 && (
-                  <div className="col-span-full text-center py-8 text-muted-foreground">
-                    Belum ada produk
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  </CardContent>
+                </Card>
+              ))}
+              {products.length === 0 && (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  Belum ada produk
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Cart */}
