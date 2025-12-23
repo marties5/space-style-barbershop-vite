@@ -67,9 +67,34 @@ export function usePushNotification() {
       return false;
     }
 
+    // Browser umumnya memblokir prompt notifikasi di dalam iframe (mis. preview/editor).
+    // Jadi izin tidak akan muncul walaupun tombol sudah diklik.
+    const inIframe = (() => {
+      try {
+        return window.self !== window.top;
+      } catch {
+        return true;
+      }
+    })();
+
+    if (inIframe) {
+      toast.error('Izin notifikasi tidak bisa muncul di mode preview. Buka aplikasi di tab baru untuk mengaktifkan notifikasi.');
+      return false;
+    }
+
+    if (!window.isSecureContext) {
+      toast.error('Push notification butuh HTTPS (atau localhost).');
+      return false;
+    }
+
+    if (Notification.permission === 'denied') {
+      toast.error('Izin notifikasi sudah diblokir di browser. Ubah ke Allow di pengaturan situs/browser lalu coba lagi.');
+      return false;
+    }
+
     setIsLoading(true);
     try {
-      // Request permission FIRST - always show browser prompt
+      // Request permission FIRST - always show browser prompt (jika status masih "default")
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
 
