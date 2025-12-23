@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, User, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, User, Search, Upload, X } from 'lucide-react';
 import { barberSchema, validateForm } from '@/lib/validations';
 
 interface Barber {
@@ -26,10 +26,12 @@ export default function Barbers() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBarber, setEditingBarber] = useState<Barber | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
-    photo_url: '',
     specialization: '',
     commission_service: 40,
     commission_product: 10
@@ -40,7 +42,7 @@ export default function Barbers() {
   }, []);
 
   const fetchBarbers = async () => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('barbers')
       .select('*')
       .order('name');
@@ -55,12 +57,13 @@ export default function Barbers() {
   const resetForm = () => {
     setFormData({
       name: '',
-      photo_url: '',
       specialization: '',
       commission_service: 40,
       commission_product: 10
     });
     setEditingBarber(null);
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const handleOpenDialog = (barber?: Barber) => {
@@ -68,21 +71,59 @@ export default function Barbers() {
       setEditingBarber(barber);
       setFormData({
         name: barber.name,
-        photo_url: barber.photo_url || '',
         specialization: barber.specialization || '',
         commission_service: barber.commission_service,
         commission_product: barber.commission_product
       });
+      setImagePreview(barber.photo_url);
     } else {
       resetForm();
     }
     setDialogOpen(true);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Ukuran file maksimal 2MB');
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (barberId: string): Promise<string | null> => {
+    if (!imageFile) return editingBarber?.photo_url || null;
+    
+    const fileExt = imageFile.name.split('.').pop();
+    const fileName = `${barberId}.${fileExt}`;
+    const filePath = fileName;
+
+    const { error: uploadError } = await supabase.storage
+      .from('barber-photos')
+      .upload(filePath, imageFile, { upsert: true });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from('barber-photos')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form data
     const validation = validateForm(barberSchema, formData);
     if (!validation.success) {
       toast.error((validation as { success: false; error: string }).error);
@@ -93,13 +134,17 @@ export default function Barbers() {
     setIsLoading(true);
 
     try {
-      
       if (editingBarber) {
+        let photoUrl = editingBarber.photo_url;
+        if (imageFile) {
+          photoUrl = await uploadImage(editingBarber.id);
+        }
+
         const { error } = await supabase
           .from('barbers')
           .update({
             name: validatedData.name,
-            photo_url: validatedData.photo_url || null,
+            photo_url: photoUrl,
             specialization: validatedData.specialization || null,
             commission_service: validatedData.commission_service,
             commission_product: validatedData.commission_product
@@ -109,17 +154,29 @@ export default function Barbers() {
         if (error) throw error;
         toast.success('Barber berhasil diupdate');
       } else {
-        const { error } = await supabase
+        const { data: newBarber, error } = await supabase
           .from('barbers')
           .insert({
             name: validatedData.name,
-            photo_url: validatedData.photo_url || null,
             specialization: validatedData.specialization || null,
             commission_service: validatedData.commission_service,
             commission_product: validatedData.commission_product
-          });
+          })
+          .select()
+          .single();
 
         if (error) throw error;
+
+        if (imageFile && newBarber) {
+          const photoUrl = await uploadImage(newBarber.id);
+          if (photoUrl) {
+            await supabase
+              .from('barbers')
+              .update({ photo_url: photoUrl })
+              .eq('id', newBarber.id);
+          }
+        }
+
         toast.success('Barber berhasil ditambahkan');
       }
 
@@ -155,11 +212,7 @@ export default function Barbers() {
       .update({ is_active: !barber.is_active })
       .eq('id', barber.id);
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      fetchBarbers();
-    }
+    if (!error) fetchBarbers();
   };
 
   return (
@@ -223,7 +276,7 @@ export default function Barbers() {
                       onClick={() => toggleActive(barber)}
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         barber.is_active 
-                          ? 'bg-success/10 text-success' 
+                          ? 'bg-green-500/10 text-green-600' 
                           : 'bg-muted text-muted-foreground'
                       }`}
                     >
@@ -261,6 +314,51 @@ export default function Barbers() {
             <DialogTitle>{editingBarber ? 'Edit Barber' : 'Tambah Barber'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Photo Upload */}
+            <div className="space-y-2">
+              <Label>Foto Barber</Label>
+              <div className="flex items-center gap-4">
+                {imagePreview ? (
+                  <div className="relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview(null);
+                      }}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-20 h-20 rounded-full border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                  >
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground mt-1">Upload</span>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <div className="text-sm text-muted-foreground">
+                  <p>Format: JPG, PNG</p>
+                  <p>Maks: 2MB</p>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="name">Nama</Label>
               <Input
@@ -268,15 +366,6 @@ export default function Barbers() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="photo_url">URL Foto (opsional)</Label>
-              <Input
-                id="photo_url"
-                value={formData.photo_url}
-                onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
-                placeholder="https://..."
               />
             </div>
             <div className="space-y-2">
