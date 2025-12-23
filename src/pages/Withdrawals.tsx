@@ -39,6 +39,7 @@ export default function Withdrawals() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [barberId, setBarberId] = useState("");
   const [amount, setAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [notes, setNotes] = useState("");
 
   const { data: barbers } = useQuery({
@@ -74,6 +75,7 @@ export default function Withdrawals() {
       const { error } = await supabase.from("barber_withdrawals").insert({
         barber_id: barberId,
         amount: parseFloat(amount),
+        payment_method: paymentMethod,
         notes: notes || null,
         user_id: user?.id,
       });
@@ -107,6 +109,7 @@ export default function Withdrawals() {
   const resetForm = () => {
     setBarberId("");
     setAmount("");
+    setPaymentMethod("cash");
     setNotes("");
   };
 
@@ -206,6 +209,18 @@ export default function Withdrawals() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="paymentMethod">Metode Pembayaran</Label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="transfer">Bank Transfer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="notes">Catatan (opsional)</Label>
                 <Textarea
                   id="notes"
@@ -269,6 +284,7 @@ export default function Withdrawals() {
             <TableRow>
               <TableHead>Tanggal</TableHead>
               <TableHead>Barber</TableHead>
+              <TableHead>Metode</TableHead>
               <TableHead>Jumlah</TableHead>
               <TableHead>Catatan</TableHead>
               {isOwner && <TableHead className="w-[80px]">Aksi</TableHead>}
@@ -277,13 +293,13 @@ export default function Withdrawals() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={6} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : withdrawals?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   Belum ada penarikan tercatat
                 </TableCell>
               </TableRow>
@@ -294,6 +310,15 @@ export default function Withdrawals() {
                     {format(new Date(withdrawal.created_at), "dd MMM yyyy HH:mm", { locale: localeId })}
                   </TableCell>
                   <TableCell className="font-medium">{withdrawal.barbers?.name}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      withdrawal.payment_method === 'cash' 
+                        ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                        : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                    }`}>
+                      {withdrawal.payment_method === 'cash' ? 'Cash' : 'Transfer'}
+                    </span>
+                  </TableCell>
                   <TableCell>Rp {Number(withdrawal.amount).toLocaleString("id-ID")}</TableCell>
                   <TableCell className="text-muted-foreground">{withdrawal.notes || "-"}</TableCell>
                   {isOwner && (

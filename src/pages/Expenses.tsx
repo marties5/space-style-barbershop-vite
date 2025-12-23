@@ -48,6 +48,7 @@ export default function Expenses() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("operasional");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [notes, setNotes] = useState("");
 
   const { data: expenses, isLoading } = useQuery({
@@ -68,6 +69,7 @@ export default function Expenses() {
         description,
         amount: parseFloat(amount),
         category,
+        payment_method: paymentMethod,
         notes: notes || null,
         user_id: user?.id,
       });
@@ -102,6 +104,7 @@ export default function Expenses() {
     setDescription("");
     setAmount("");
     setCategory("operasional");
+    setPaymentMethod("cash");
     setNotes("");
   };
 
@@ -170,6 +173,18 @@ export default function Expenses() {
                 </Select>
               </div>
               <div className="space-y-2">
+                <Label htmlFor="paymentMethod">Metode Pembayaran</Label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="transfer">Bank Transfer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="notes">Catatan (opsional)</Label>
                 <Textarea
                   id="notes"
@@ -203,6 +218,7 @@ export default function Expenses() {
               <TableHead>Tanggal</TableHead>
               <TableHead>Deskripsi</TableHead>
               <TableHead>Kategori</TableHead>
+              <TableHead>Metode</TableHead>
               <TableHead>Jumlah</TableHead>
               <TableHead>Catatan</TableHead>
               {isOwner && <TableHead className="w-[80px]">Aksi</TableHead>}
@@ -211,13 +227,13 @@ export default function Expenses() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
+                <TableCell colSpan={7} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : expenses?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   Belum ada pengeluaran tercatat
                 </TableCell>
               </TableRow>
@@ -230,6 +246,15 @@ export default function Expenses() {
                   <TableCell className="font-medium">{expense.description}</TableCell>
                   <TableCell>
                     {CATEGORIES.find((c) => c.value === expense.category)?.label || expense.category}
+                  </TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      expense.payment_method === 'cash' 
+                        ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                        : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                    }`}>
+                      {expense.payment_method === 'cash' ? 'Cash' : 'Transfer'}
+                    </span>
                   </TableCell>
                   <TableCell>Rp {Number(expense.amount).toLocaleString("id-ID")}</TableCell>
                   <TableCell className="text-muted-foreground">{expense.notes || "-"}</TableCell>

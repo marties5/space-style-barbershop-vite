@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          payment_method: string
           user_id: string | null
         }
         Insert: {
@@ -29,6 +30,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payment_method?: string
           user_id?: string | null
         }
         Update: {
@@ -37,6 +39,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payment_method?: string
           user_id?: string | null
         }
         Relationships: [
@@ -93,6 +96,7 @@ export type Database = {
           description: string
           id: string
           notes: string | null
+          payment_method: string
           user_id: string | null
         }
         Insert: {
@@ -102,6 +106,7 @@ export type Database = {
           description: string
           id?: string
           notes?: string | null
+          payment_method?: string
           user_id?: string | null
         }
         Update: {
@@ -109,6 +114,34 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      initial_deposits: {
+        Row: {
+          amount: number
+          created_at: string
+          deposit_date: string
+          id: string
+          notes: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          deposit_date?: string
+          id?: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          deposit_date?: string
           id?: string
           notes?: string | null
           user_id?: string | null
