@@ -7,7 +7,6 @@ import {
   LayoutDashboard, 
   ShoppingCart, 
   Users, 
-  Scissors, 
   Package, 
   BarChart3,
   LogOut,
@@ -15,7 +14,9 @@ import {
   X,
   ChevronRight,
   Receipt,
-  Wallet
+  Wallet,
+  User,
+  Scissors
 } from 'lucide-react';
 
 interface AppLayoutProps {
@@ -26,11 +27,11 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/transaction', label: 'Transaksi', icon: ShoppingCart },
   { href: '/barbers', label: 'Barber', icon: Users, ownerOnly: true },
-  { href: '/services', label: 'Layanan', icon: Scissors, ownerOnly: true },
-  { href: '/products', label: 'Produk', icon: Package, ownerOnly: true },
+  { href: '/items', label: 'Layanan & Produk', icon: Package, ownerOnly: true },
   { href: '/expenses', label: 'Pengeluaran', icon: Receipt },
   { href: '/withdrawals', label: 'Penarikan', icon: Wallet },
   { href: '/reports', label: 'Laporan', icon: BarChart3 },
+  { href: '/profile', label: 'Profil', icon: User },
 ];
 
 export default function AppLayout({ children }: AppLayoutProps) {
