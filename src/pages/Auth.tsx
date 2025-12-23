@@ -96,8 +96,8 @@ export default function Auth() {
               <Scissors className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">BarberPOS</h1>
-              <p className="text-sm text-muted-foreground">Sistem Manajemen Barbershop</p>
+              <h1 className="text-2xl font-bold text-foreground">Space Style</h1>
+              <p className="text-sm text-muted-foreground">Barbershop Management System</p>
             </div>
           </div>
         </div>

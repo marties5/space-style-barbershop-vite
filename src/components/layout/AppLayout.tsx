@@ -53,7 +53,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card border-b z-50 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <Scissors className="h-6 w-6 text-primary" />
-          <span className="font-semibold">BarberPOS</span>
+          <span className="font-semibold">Space Style</span>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -75,7 +75,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <Scissors className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="font-semibold text-foreground">BarberPOS</h1>
+              <h1 className="font-semibold text-foreground">Space Style</h1>
               <p className="text-xs text-muted-foreground capitalize">{role}</p>
             </div>
           </div>
