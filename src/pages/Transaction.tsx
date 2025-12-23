@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 import { Scissors, Package, User, Trash2, Plus, Minus, ShoppingCart, CreditCard, Banknote, Smartphone } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -42,7 +43,7 @@ export default function Transaction() {
   const [barberModalOpen, setBarberModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris' | 'transfer'>('cash');
-  
+  const [cashReceived, setCashReceived] = useState<string>('');
 
   useEffect(() => {
     fetchData();
@@ -167,6 +168,7 @@ export default function Transaction() {
       toast.success(`Transaksi berhasil! Total: ${formatCurrency(total)} (${paymentMethod.toUpperCase()})`);
       setCart([]);
       setPaymentMethod('cash');
+      setCashReceived('');
       fetchData(); // Refresh stock
     } catch (error: any) {
       toast.error(error.message || 'Gagal menyimpan transaksi');
@@ -385,6 +387,37 @@ export default function Transaction() {
                       </div>
                     </RadioGroup>
                   </div>
+
+                  {/* Cash Payment - Amount Received & Change */}
+                  {paymentMethod === 'cash' && (
+                    <div className="space-y-3 p-3 bg-muted/50 rounded-lg border">
+                      <div className="space-y-2">
+                        <Label htmlFor="cash-received" className="text-sm">Uang Diterima</Label>
+                        <Input
+                          id="cash-received"
+                          type="number"
+                          placeholder="Masukkan jumlah..."
+                          value={cashReceived}
+                          onChange={(e) => setCashReceived(e.target.value)}
+                          className="text-lg font-medium"
+                        />
+                      </div>
+                      {cashReceived && Number(cashReceived) > 0 && (
+                        <div className="flex justify-between items-center pt-2 border-t">
+                          <span className="text-sm font-medium">Kembalian</span>
+                          <span className={cn(
+                            "text-lg font-bold",
+                            Number(cashReceived) >= total ? "text-green-600" : "text-destructive"
+                          )}>
+                            {Number(cashReceived) >= total 
+                              ? formatCurrency(Number(cashReceived) - total)
+                              : `Kurang ${formatCurrency(total - Number(cashReceived))}`
+                            }
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Total</span>
