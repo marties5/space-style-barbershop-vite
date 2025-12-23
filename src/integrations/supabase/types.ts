@@ -184,6 +184,63 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_open_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: []
+      }
+      shop_status: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          id: string
+          is_open: boolean
+          opened_at: string | null
+          opened_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          is_open?: boolean
+          opened_at?: string | null
+          opened_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          is_open?: boolean
+          opened_at?: string | null
+          opened_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       transaction_items: {
         Row: {
           barber_id: string | null

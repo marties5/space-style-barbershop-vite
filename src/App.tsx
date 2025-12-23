@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ShopStatusProvider } from "@/hooks/useShopStatus";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import { TransactionNotification } from "@/components/notifications/TransactionNotification";
@@ -27,52 +28,54 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <TransactionNotification />
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <AppLayout><Dashboard /></AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/transaction" element={
-              <ProtectedRoute>
-                <AppLayout><Transaction /></AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/barbers" element={
-              <ProtectedRoute requireOwner>
-                <AppLayout><Barbers /></AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/items" element={
-              <ProtectedRoute requireOwner>
-                <AppLayout><ItemsManagement /></AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/expenses" element={
-              <ProtectedRoute>
-                <AppLayout><Expenses /></AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/withdrawals" element={
-              <ProtectedRoute>
-                <AppLayout><Withdrawals /></AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/reports" element={
-              <ProtectedRoute>
-                <AppLayout><Reports /></AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <AppLayout><Profile /></AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <ShopStatusProvider>
+            <TransactionNotification />
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <AppLayout><Dashboard /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/transaction" element={
+                <ProtectedRoute>
+                  <AppLayout><Transaction /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/barbers" element={
+                <ProtectedRoute requireOwner>
+                  <AppLayout><Barbers /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/items" element={
+                <ProtectedRoute requireOwner>
+                  <AppLayout><ItemsManagement /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/expenses" element={
+                <ProtectedRoute>
+                  <AppLayout><Expenses /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/withdrawals" element={
+                <ProtectedRoute>
+                  <AppLayout><Withdrawals /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/reports" element={
+                <ProtectedRoute>
+                  <AppLayout><Reports /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <AppLayout><Profile /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ShopStatusProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
