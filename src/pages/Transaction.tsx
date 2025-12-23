@@ -14,6 +14,7 @@ interface Item {
   type: string;
   price: number;
   stock: number | null;
+  image_url: string | null;
 }
 
 interface Barber {
@@ -197,13 +198,21 @@ export default function Transaction() {
               {services.map(item => (
                 <Card 
                   key={item.id}
-                  className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]"
+                  className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.02] overflow-hidden"
                   onClick={() => handleItemClick(item)}
                 >
+                  <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
+                    {item.image_url ? (
+                      <img 
+                        src={item.image_url} 
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Scissors className="h-12 w-12 text-primary/40" />
+                    )}
+                  </div>
                   <CardContent className="p-4">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 bg-primary/10">
-                      <Scissors className="h-5 w-5 text-primary" />
-                    </div>
                     <h3 className="font-medium truncate">{item.name}</h3>
                     <p className="text-lg font-bold text-primary mt-1">
                       {formatCurrency(item.price)}
@@ -230,21 +239,29 @@ export default function Transaction() {
                 <Card 
                   key={item.id}
                   className={cn(
-                    "cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]",
+                    "cursor-pointer transition-all hover:shadow-md hover:scale-[1.02] overflow-hidden",
                     (item.stock || 0) <= 0 && "opacity-50 pointer-events-none"
                   )}
                   onClick={() => handleItemClick(item)}
                 >
+                  <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden relative">
+                    {item.image_url ? (
+                      <img 
+                        src={item.image_url} 
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Package className="h-12 w-12 text-accent-foreground/40" />
+                    )}
+                    <span className="absolute top-2 right-2 bg-background/90 text-xs font-medium px-2 py-1 rounded-full">
+                      Stok: {item.stock || 0}
+                    </span>
+                  </div>
                   <CardContent className="p-4">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 bg-accent">
-                      <Package className="h-5 w-5 text-accent-foreground" />
-                    </div>
                     <h3 className="font-medium truncate">{item.name}</h3>
                     <p className="text-lg font-bold text-primary mt-1">
                       {formatCurrency(item.price)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Stok: {item.stock || 0}
                     </p>
                   </CardContent>
                 </Card>
