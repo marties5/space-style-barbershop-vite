@@ -17,6 +17,7 @@ import Reports from "./pages/Reports";
 import Expenses from "./pages/Expenses";
 import Withdrawals from "./pages/Withdrawals";
 import Profile from "./pages/Profile";
+import NotificationHistory from "./pages/NotificationHistory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -71,6 +72,11 @@ const App = () => (
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <AppLayout><Profile /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/notifications" element={
+                <ProtectedRoute>
+                  <AppLayout><NotificationHistory /></AppLayout>
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />
