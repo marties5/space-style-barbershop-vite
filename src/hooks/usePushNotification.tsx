@@ -62,19 +62,26 @@ export function usePushNotification() {
   }, []);
 
   const subscribe = useCallback(async () => {
-    if (!user || !VAPID_PUBLIC_KEY) {
-      toast.error('Konfigurasi push notification belum lengkap');
+    if (!user) {
+      toast.error('Silakan login terlebih dahulu');
       return false;
     }
 
     setIsLoading(true);
     try {
-      // Request permission
+      // Request permission FIRST - always show browser prompt
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
 
       if (permissionResult !== 'granted') {
         toast.error('Izin notifikasi ditolak');
+        return false;
+      }
+
+      // Check VAPID key after permission is granted
+      if (!VAPID_PUBLIC_KEY) {
+        console.error('VAPID_PUBLIC_KEY is not configured. Please add VITE_VAPID_PUBLIC_KEY to environment variables.');
+        toast.error('Konfigurasi push notification belum lengkap. Silakan hubungi admin.');
         return false;
       }
 
