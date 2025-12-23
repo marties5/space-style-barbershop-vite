@@ -275,44 +275,48 @@ export default function Transaction() {
               <>
                 <div className="space-y-3 max-h-[400px] overflow-y-auto">
                   {cart.map((c, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{c.item.name}</p>
-                        {c.barber && (
-                          <p className="text-xs text-muted-foreground">
-                            Barber: {c.barber.name}
-                          </p>
-                        )}
-                        <p className="text-sm font-medium text-primary mt-1">
-                          {formatCurrency(c.item.price * c.quantity)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-7 w-7"
-                          onClick={() => updateQuantity(index, -1)}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-6 text-center text-sm">{c.quantity}</span>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-7 w-7"
-                          onClick={() => updateQuantity(index, 1)}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
+                    <div key={index} className="p-3 bg-muted/50 rounded-lg space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{c.item.name}</p>
+                          {c.barber && (
+                            <p className="text-xs text-muted-foreground">
+                              Barber: {c.barber.name}
+                            </p>
+                          )}
+                        </div>
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-7 w-7 text-destructive"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                           onClick={() => removeFromCart(index)}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center bg-background rounded-full border shadow-sm">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-9 w-9 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
+                            onClick={() => updateQuantity(index, -1)}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-10 text-center font-semibold text-base">{c.quantity}</span>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+                            onClick={() => updateQuantity(index, 1)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-base font-bold text-primary">
+                          {formatCurrency(c.item.price * c.quantity)}
+                        </p>
                       </div>
                     </div>
                   ))}
