@@ -38,7 +38,7 @@ export default function Transaction() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [barberModalOpen, setBarberModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'service' | 'product'>('service');
+  
 
   useEffect(() => {
     fetchData();
@@ -186,66 +186,75 @@ export default function Transaction() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Items Grid */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Tabs */}
-          <div className="flex gap-2">
-            <Button
-              variant={activeTab === 'service' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('service')}
-              className="gap-2"
-            >
-              <Scissors className="h-4 w-4" />
-              Layanan
-            </Button>
-            <Button
-              variant={activeTab === 'product' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('product')}
-              className="gap-2"
-            >
-              <Package className="h-4 w-4" />
-              Produk
-            </Button>
+        <div className="lg:col-span-2 space-y-6">
+          {/* Layanan Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Scissors className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold text-lg">Layanan</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {services.map(item => (
+                <Card 
+                  key={item.id}
+                  className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]"
+                  onClick={() => handleItemClick(item)}
+                >
+                  <CardContent className="p-4">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 bg-primary/10">
+                      <Scissors className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="font-medium truncate">{item.name}</h3>
+                    <p className="text-lg font-bold text-primary mt-1">
+                      {formatCurrency(item.price)}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+              {services.length === 0 && (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  Belum ada layanan
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Items Bento Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {(activeTab === 'service' ? services : products).map(item => (
-              <Card 
-                key={item.id}
-                className={cn(
-                  "cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]",
-                  item.type === 'product' && (item.stock || 0) <= 0 && "opacity-50 pointer-events-none"
-                )}
-                onClick={() => handleItemClick(item)}
-              >
-                <CardContent className="p-4">
-                  <div className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center mb-3",
-                    item.type === 'service' ? "bg-primary/10" : "bg-accent"
-                  )}>
-                    {item.type === 'service' 
-                      ? <Scissors className="h-5 w-5 text-primary" />
-                      : <Package className="h-5 w-5 text-accent-foreground" />
-                    }
-                  </div>
-                  <h3 className="font-medium truncate">{item.name}</h3>
-                  <p className="text-lg font-bold text-primary mt-1">
-                    {formatCurrency(item.price)}
-                  </p>
-                  {item.type === 'product' && (
+          {/* Produk Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-accent-foreground" />
+              <h2 className="font-semibold text-lg">Produk</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {products.map(item => (
+                <Card 
+                  key={item.id}
+                  className={cn(
+                    "cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]",
+                    (item.stock || 0) <= 0 && "opacity-50 pointer-events-none"
+                  )}
+                  onClick={() => handleItemClick(item)}
+                >
+                  <CardContent className="p-4">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 bg-accent">
+                      <Package className="h-5 w-5 text-accent-foreground" />
+                    </div>
+                    <h3 className="font-medium truncate">{item.name}</h3>
+                    <p className="text-lg font-bold text-primary mt-1">
+                      {formatCurrency(item.price)}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Stok: {item.stock || 0}
                     </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-
-            {(activeTab === 'service' ? services : products).length === 0 && (
-              <div className="col-span-full text-center py-12 text-muted-foreground">
-                Belum ada {activeTab === 'service' ? 'layanan' : 'produk'}
-              </div>
-            )}
+                  </CardContent>
+                </Card>
+              ))}
+              {products.length === 0 && (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  Belum ada produk
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
