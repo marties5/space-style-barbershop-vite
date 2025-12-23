@@ -20,10 +20,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Banknote, Trash2 } from "lucide-react";
+import { Plus, Banknote, Trash2, Building2, Wallet } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 
@@ -34,6 +41,7 @@ export default function CashRegister() {
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
   const [depositDate, setDepositDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [depositType, setDepositType] = useState<"cash" | "bank">("cash");
 
   const { data: deposits, isLoading } = useQuery({
     queryKey: ["initial-deposits"],
@@ -63,6 +71,7 @@ export default function CashRegister() {
           .update({
             amount: parseFloat(amount),
             notes: notes || null,
+            deposit_type: depositType,
           })
           .eq("id", existing.id);
         if (error) throw error;
@@ -73,6 +82,7 @@ export default function CashRegister() {
           deposit_date: depositDate,
           notes: notes || null,
           user_id: user?.id,
+          deposit_type: depositType,
         });
         if (error) throw error;
       }
@@ -108,6 +118,7 @@ export default function CashRegister() {
     setAmount("");
     setNotes("");
     setDepositDate(format(new Date(), "yyyy-MM-dd"));
+    setDepositType("cash");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -120,6 +131,8 @@ export default function CashRegister() {
   };
 
   const totalDeposits = deposits?.reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+  const totalCash = deposits?.filter(d => d.deposit_type === 'cash').reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+  const totalBank = deposits?.filter(d => d.deposit_type === 'bank').reduce((sum, d) => sum + Number(d.amount), 0) || 0;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -169,6 +182,28 @@ export default function CashRegister() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="depositType">Tujuan Setoran</Label>
+                <Select value={depositType} onValueChange={(v) => setDepositType(v as "cash" | "bank")}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">
+                      <div className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4" />
+                        Kas (Cash)
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="bank">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        Bank
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="notes">Catatan (opsional)</Label>
                 <Textarea
                   id="notes"
@@ -185,11 +220,27 @@ export default function CashRegister() {
         </Dialog>
       </div>
 
-      <div className="bg-card border rounded-lg p-4">
-        <div className="flex items-center gap-2">
-          <Banknote className="h-5 w-5 text-primary" />
-          <span className="text-muted-foreground">Total Setoran (Semua):</span>
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="bg-card border rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <Banknote className="h-5 w-5 text-primary" />
+            <span className="text-muted-foreground">Total Semua:</span>
+          </div>
           <span className="font-bold text-lg">{formatCurrency(totalDeposits)}</span>
+        </div>
+        <div className="bg-card border rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <Wallet className="h-5 w-5 text-green-500" />
+            <span className="text-muted-foreground">Kas (Cash):</span>
+          </div>
+          <span className="font-bold text-lg text-green-600">{formatCurrency(totalCash)}</span>
+        </div>
+        <div className="bg-card border rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-blue-500" />
+            <span className="text-muted-foreground">Bank:</span>
+          </div>
+          <span className="font-bold text-lg text-blue-600">{formatCurrency(totalBank)}</span>
         </div>
       </div>
 
@@ -202,6 +253,7 @@ export default function CashRegister() {
             <TableHeader>
               <TableRow>
                 <TableHead>Tanggal</TableHead>
+                <TableHead>Tujuan</TableHead>
                 <TableHead>Jumlah</TableHead>
                 <TableHead>Catatan</TableHead>
                 {isOwner && <TableHead className="w-[80px]">Aksi</TableHead>}
@@ -210,13 +262,13 @@ export default function CashRegister() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8">
+                  <TableCell colSpan={5} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : deposits?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                     Belum ada setoran tercatat
                   </TableCell>
                 </TableRow>
@@ -225,6 +277,21 @@ export default function CashRegister() {
                   <TableRow key={deposit.id}>
                     <TableCell>
                       {format(new Date(deposit.deposit_date), "EEEE, dd MMMM yyyy", { locale: localeId })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {deposit.deposit_type === 'bank' ? (
+                          <>
+                            <Building2 className="h-4 w-4 text-blue-500" />
+                            <span className="text-blue-600">Bank</span>
+                          </>
+                        ) : (
+                          <>
+                            <Wallet className="h-4 w-4 text-green-500" />
+                            <span className="text-green-600">Kas</span>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="font-medium text-primary">
                       {formatCurrency(Number(deposit.amount))}
