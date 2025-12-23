@@ -44,6 +44,7 @@ export default function Transaction() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris' | 'transfer'>('cash');
   const [cashReceived, setCashReceived] = useState<string>('');
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -169,6 +170,7 @@ export default function Transaction() {
       setCart([]);
       setPaymentMethod('cash');
       setCashReceived('');
+      setCheckoutModalOpen(false);
       fetchData(); // Refresh stock
     } catch (error: any) {
       toast.error(error.message || 'Gagal menyimpan transaksi');
@@ -347,78 +349,6 @@ export default function Transaction() {
                 </div>
 
                 <div className="border-t pt-4 space-y-4">
-                  {/* Payment Method Selection */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Metode Pembayaran</Label>
-                    <RadioGroup
-                      value={paymentMethod}
-                      onValueChange={(value) => setPaymentMethod(value as 'cash' | 'qris' | 'transfer')}
-                      className="grid grid-cols-3 gap-2"
-                    >
-                      <div>
-                        <RadioGroupItem value="cash" id="cash" className="peer sr-only" />
-                        <Label
-                          htmlFor="cash"
-                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
-                        >
-                          <Banknote className="h-5 w-5 mb-1" />
-                          <span className="text-xs font-medium">Cash</span>
-                        </Label>
-                      </div>
-                      <div>
-                        <RadioGroupItem value="qris" id="qris" className="peer sr-only" />
-                        <Label
-                          htmlFor="qris"
-                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
-                        >
-                          <Smartphone className="h-5 w-5 mb-1" />
-                          <span className="text-xs font-medium">QRIS</span>
-                        </Label>
-                      </div>
-                      <div>
-                        <RadioGroupItem value="transfer" id="transfer" className="peer sr-only" />
-                        <Label
-                          htmlFor="transfer"
-                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
-                        >
-                          <CreditCard className="h-5 w-5 mb-1" />
-                          <span className="text-xs font-medium">Transfer</span>
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-
-                  {/* Cash Payment - Amount Received & Change */}
-                  {paymentMethod === 'cash' && (
-                    <div className="space-y-3 p-3 bg-muted/50 rounded-lg border">
-                      <div className="space-y-2">
-                        <Label htmlFor="cash-received" className="text-sm">Uang Diterima</Label>
-                        <Input
-                          id="cash-received"
-                          type="number"
-                          placeholder="Masukkan jumlah..."
-                          value={cashReceived}
-                          onChange={(e) => setCashReceived(e.target.value)}
-                          className="text-lg font-medium"
-                        />
-                      </div>
-                      {cashReceived && Number(cashReceived) > 0 && (
-                        <div className="flex justify-between items-center pt-2 border-t">
-                          <span className="text-sm font-medium">Kembalian</span>
-                          <span className={cn(
-                            "text-lg font-bold",
-                            Number(cashReceived) >= total ? "text-green-600" : "text-destructive"
-                          )}>
-                            {Number(cashReceived) >= total 
-                              ? formatCurrency(Number(cashReceived) - total)
-                              : `Kurang ${formatCurrency(total - Number(cashReceived))}`
-                            }
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Total</span>
                     <span className="text-xl font-bold text-primary">
@@ -428,10 +358,9 @@ export default function Transaction() {
                   <Button 
                     className="w-full" 
                     size="lg"
-                    onClick={handleCheckout}
-                    disabled={isSubmitting}
+                    onClick={() => setCheckoutModalOpen(true)}
                   >
-                    {isSubmitting ? 'Memproses...' : 'Checkout'}
+                    Checkout
                   </Button>
                 </div>
               </>
@@ -475,6 +404,120 @@ export default function Transaction() {
                 Belum ada barber. Silakan tambah barber terlebih dahulu.
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Checkout Payment Modal */}
+      <Dialog open={checkoutModalOpen} onOpenChange={setCheckoutModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Pembayaran</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 mt-4">
+            {/* Order Summary */}
+            <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
+              <div className="text-sm text-muted-foreground">Total Belanja</div>
+              <div className="text-3xl font-bold text-primary">{formatCurrency(total)}</div>
+              <div className="text-sm text-muted-foreground">{cart.length} item</div>
+            </div>
+
+            {/* Payment Method Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Metode Pembayaran</Label>
+              <RadioGroup
+                value={paymentMethod}
+                onValueChange={(value) => {
+                  setPaymentMethod(value as 'cash' | 'qris' | 'transfer');
+                  setCashReceived('');
+                }}
+                className="grid grid-cols-3 gap-3"
+              >
+                <div>
+                  <RadioGroupItem value="cash" id="modal-cash" className="peer sr-only" />
+                  <Label
+                    htmlFor="modal-cash"
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
+                  >
+                    <Banknote className="h-6 w-6 mb-2" />
+                    <span className="text-sm font-medium">Cash</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="qris" id="modal-qris" className="peer sr-only" />
+                  <Label
+                    htmlFor="modal-qris"
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
+                  >
+                    <Smartphone className="h-6 w-6 mb-2" />
+                    <span className="text-sm font-medium">QRIS</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="transfer" id="modal-transfer" className="peer sr-only" />
+                  <Label
+                    htmlFor="modal-transfer"
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
+                  >
+                    <CreditCard className="h-6 w-6 mb-2" />
+                    <span className="text-sm font-medium">Transfer</span>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Cash Payment - Amount Received & Change */}
+            {paymentMethod === 'cash' && (
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+                <div className="space-y-2">
+                  <Label htmlFor="modal-cash-received" className="text-sm font-medium">Uang Diterima</Label>
+                  <Input
+                    id="modal-cash-received"
+                    type="number"
+                    placeholder="Masukkan jumlah..."
+                    value={cashReceived}
+                    onChange={(e) => setCashReceived(e.target.value)}
+                    className="text-xl font-bold h-14"
+                    autoFocus
+                  />
+                </div>
+                {cashReceived && Number(cashReceived) > 0 && (
+                  <div className={cn(
+                    "flex justify-between items-center p-4 rounded-lg",
+                    Number(cashReceived) >= total ? "bg-green-100 dark:bg-green-900/30" : "bg-destructive/10"
+                  )}>
+                    <span className="font-medium">
+                      {Number(cashReceived) >= total ? 'Kembalian' : 'Kekurangan'}
+                    </span>
+                    <span className={cn(
+                      "text-2xl font-bold",
+                      Number(cashReceived) >= total ? "text-green-600 dark:text-green-400" : "text-destructive"
+                    )}>
+                      {formatCurrency(Math.abs(Number(cashReceived) - total))}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setCheckoutModalOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button 
+                className="flex-1" 
+                size="lg"
+                onClick={handleCheckout}
+                disabled={isSubmitting || (paymentMethod === 'cash' && Number(cashReceived) < total)}
+              >
+                {isSubmitting ? 'Memproses...' : 'Bayar Sekarang'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
