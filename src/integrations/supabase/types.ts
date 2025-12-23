@@ -126,6 +126,7 @@ export type Database = {
           amount: number
           created_at: string
           deposit_date: string
+          deposit_type: string
           id: string
           notes: string | null
           user_id: string | null
@@ -134,6 +135,7 @@ export type Database = {
           amount?: number
           created_at?: string
           deposit_date?: string
+          deposit_type?: string
           id?: string
           notes?: string | null
           user_id?: string | null
@@ -142,6 +144,7 @@ export type Database = {
           amount?: number
           created_at?: string
           deposit_date?: string
+          deposit_type?: string
           id?: string
           notes?: string | null
           user_id?: string | null

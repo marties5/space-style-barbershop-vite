@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
-import { Calendar, TrendingUp, Users, DollarSign, Receipt, Wallet, TrendingDown, Banknote, Smartphone, CreditCard } from 'lucide-react';
+import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfDay, endOfDay } from 'date-fns';
+import { Calendar, TrendingUp, Users, DollarSign, Receipt, Wallet, TrendingDown, Banknote, Smartphone, CreditCard, Building2 } from 'lucide-react';
 import { BarberDetailReport } from '@/components/reports/BarberDetailReport';
 
 interface BarberReport {
@@ -35,6 +35,16 @@ interface PaymentMethodReport {
   count: number;
 }
 
+interface CashReport {
+  totalCash: number;
+  totalBank: number;
+  initialDeposits: number;
+  cashRevenue: number;
+  cashExpenses: number;
+  cashWithdrawals: number;
+  currentCashBalance: number;
+}
+
 type FilterType = 'custom' | 'today' | 'week' | 'month' | 'year';
 
 export default function Reports() {
@@ -51,14 +61,25 @@ export default function Reports() {
   const [totalWithdrawals, setTotalWithdrawals] = useState(0);
   const [expensesByCategory, setExpensesByCategory] = useState<ExpenseReport[]>([]);
   const [paymentMethodReports, setPaymentMethodReports] = useState<PaymentMethodReport[]>([]);
+  const [cashReport, setCashReport] = useState<CashReport>({
+    totalCash: 0,
+    totalBank: 0,
+    initialDeposits: 0,
+    cashRevenue: 0,
+    cashExpenses: 0,
+    cashWithdrawals: 0,
+    currentCashBalance: 0,
+  });
 
   // Calculate effective date range based on filter type
   const getDateRange = () => {
     const now = new Date();
     switch (filterType) {
       case 'today':
-        const today = format(now, 'yyyy-MM-dd');
-        return { start: today, end: today };
+        const now = new Date();
+        const todayStart = format(startOfDay(now), 'yyyy-MM-dd');
+        const todayEnd = format(endOfDay(now), 'yyyy-MM-dd');
+        return { start: todayStart, end: todayEnd };
       case 'week':
         return { start: format(subDays(now, 7), 'yyyy-MM-dd'), end: format(now, 'yyyy-MM-dd') };
       case 'month':
@@ -170,6 +191,30 @@ export default function Reports() {
       .lte('created_at', endTime);
 
     setTotalWithdrawals(withdrawals?.reduce((sum, w) => sum + Number(w.amount), 0) || 0);
+
+    // Fetch initial deposits for cash report
+    const { data: initialDeposits } = await supabase
+      .from('initial_deposits')
+      .select('*')
+      .gte('deposit_date', start)
+      .lte('deposit_date', end);
+
+    // Calculate cash report
+    const depositsCash = initialDeposits?.filter(d => d.deposit_type === 'cash').reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+    const depositsBank = initialDeposits?.filter(d => d.deposit_type === 'bank').reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+    const cashRevenue = transactions?.filter(t => t.payment_method === 'cash').reduce((sum, t) => sum + Number(t.total_amount), 0) || 0;
+    const cashExpenses = expenses?.filter(e => e.payment_method === 'cash').reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+    const cashWithdrawals = withdrawals?.filter(w => w.payment_method === 'cash').reduce((sum, w) => sum + Number(w.amount), 0) || 0;
+    
+    setCashReport({
+      totalCash: depositsCash,
+      totalBank: depositsBank,
+      initialDeposits: depositsCash + depositsBank,
+      cashRevenue,
+      cashExpenses,
+      cashWithdrawals,
+      currentCashBalance: depositsCash + cashRevenue - cashExpenses - cashWithdrawals,
+    });
 
     setIsLoading(false);
   };
@@ -297,10 +342,11 @@ export default function Reports() {
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="flex-wrap h-auto">
-        <TabsTrigger value="overview">Ringkasan</TabsTrigger>
-        <TabsTrigger value="payment-method">Metode Pembayaran</TabsTrigger>
-        <TabsTrigger value="barber-detail">Detail per Barber</TabsTrigger>
-        <TabsTrigger value="operational">Laporan Operasional</TabsTrigger>
+          <TabsTrigger value="overview">Ringkasan</TabsTrigger>
+          <TabsTrigger value="cash">Laporan Kas</TabsTrigger>
+          <TabsTrigger value="payment-method">Metode Pembayaran</TabsTrigger>
+          <TabsTrigger value="barber-detail">Detail per Barber</TabsTrigger>
+          <TabsTrigger value="operational">Laporan Operasional</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -395,6 +441,142 @@ export default function Reports() {
                   </TableBody>
                 </Table>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="cash" className="space-y-6">
+          {/* Cash Summary Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Setoran Kas
+                </CardTitle>
+                <Wallet className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{formatCurrency(cashReport.totalCash)}</div>
+                <p className="text-xs text-muted-foreground mt-1">Setoran tunai</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Setoran Bank
+                </CardTitle>
+                <Building2 className="h-4 w-4 text-blue-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">{formatCurrency(cashReport.totalBank)}</div>
+                <p className="text-xs text-muted-foreground mt-1">Transfer bank</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Pendapatan Tunai
+                </CardTitle>
+                <Banknote className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{formatCurrency(cashReport.cashRevenue)}</div>
+                <p className="text-xs text-muted-foreground mt-1">Dari transaksi cash</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-primary">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-primary">
+                  Saldo Kas Saat Ini
+                </CardTitle>
+                <Wallet className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${cashReport.currentCashBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                  {formatCurrency(cashReport.currentCashBalance)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Setoran + Pendapatan - Pengeluaran - Penarikan</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Cash Flow Detail */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wallet className="h-5 w-5" />
+                Detail Arus Kas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Keterangan</TableHead>
+                    <TableHead className="text-right">Jumlah</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4 text-green-500" />
+                        Setoran Kas (Cash)
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-green-600 font-medium">
+                      +{formatCurrency(cashReport.totalCash)}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <Banknote className="h-4 w-4 text-green-500" />
+                        Pendapatan Tunai
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-green-600 font-medium">
+                      +{formatCurrency(cashReport.cashRevenue)}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <Receipt className="h-4 w-4 text-destructive" />
+                        Pengeluaran Tunai
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-destructive font-medium">
+                      -{formatCurrency(cashReport.cashExpenses)}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <TrendingDown className="h-4 w-4 text-orange-500" />
+                        Penarikan Barber (Cash)
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-orange-500 font-medium">
+                      -{formatCurrency(cashReport.cashWithdrawals)}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow className="border-t-2 font-bold">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4 text-primary" />
+                        Saldo Kas Saat Ini
+                      </div>
+                    </TableCell>
+                    <TableCell className={`text-right ${cashReport.currentCashBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                      {formatCurrency(cashReport.currentCashBalance)}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
