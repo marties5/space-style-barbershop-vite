@@ -5,6 +5,9 @@ import { toast } from 'sonner';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
+// Debug: Log VAPID key availability
+console.log('VAPID_PUBLIC_KEY configured:', !!VAPID_PUBLIC_KEY, VAPID_PUBLIC_KEY ? 'Key present' : 'Key missing');
+
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding)
