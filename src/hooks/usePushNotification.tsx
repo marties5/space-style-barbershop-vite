@@ -198,7 +198,7 @@ export function usePushNotification() {
   };
 }
 
-// Helper function to send notification from frontend
+// Helper function to send notification from frontend (requires authenticated user with staff role)
 export async function sendPushNotification(
   type: 'transaction' | 'withdrawal' | 'shop_status',
   title: string,
@@ -206,8 +206,19 @@ export async function sendPushNotification(
   data?: Record<string, unknown>
 ) {
   try {
+    // Get current session for authorization
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !sessionData.session) {
+      console.error('No active session for sending push notification');
+      return false;
+    }
+
     const { data: result, error } = await supabase.functions.invoke('send-push-notification', {
-      body: { type, title, body, data }
+      body: { type, title, body, data },
+      headers: {
+        Authorization: `Bearer ${sessionData.session.access_token}`
+      }
     });
 
     if (error) {

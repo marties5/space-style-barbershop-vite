@@ -22,10 +22,64 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // ===== AUTHENTICATION CHECK =====
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      console.log('Request rejected: No authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
+    // Create client with anon key to verify the user's token
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
+    const token = authHeader.replace('Bearer ', '');
+    
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.log('Request rejected: Invalid token', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`Authenticated user: ${user.id}`);
+
+    // ===== ROLE AUTHORIZATION CHECK =====
+    // Use service role client to check user roles (bypasses RLS)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const { data: userRole, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (roleError || !userRole) {
+      console.log('Request rejected: User has no role', roleError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: User has no assigned role' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!['owner', 'kasir'].includes(userRole.role)) {
+      console.log(`Request rejected: Role "${userRole.role}" is not authorized`);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: Staff access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`User ${user.id} authorized with role: ${userRole.role}`);
+
+    // ===== PROCESS NOTIFICATION =====
     const { type, title, body, data }: PushPayload = await req.json();
 
     console.log(`Received push notification request: ${type} - ${title}`);
@@ -116,14 +170,14 @@ serve(async (req) => {
       console.log(`Removed ${failedEndpoints.length} invalid subscriptions`);
     }
 
-    // Log the notification
+    // Log the notification with sender info for audit
     await supabase.from('notification_logs').insert({
       notification_type: type,
-      notification_data: { title, body, data },
+      notification_data: { title, body, data, sent_by: user.id },
       recipients_count: successCount,
     });
 
-    console.log(`Successfully sent to ${successCount}/${subscriptions.length} subscribers`);
+    console.log(`Successfully sent to ${successCount}/${subscriptions.length} subscribers by user ${user.id}`);
 
     return new Response(
       JSON.stringify({ 
