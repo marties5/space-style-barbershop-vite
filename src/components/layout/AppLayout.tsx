@@ -1,8 +1,11 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useShopStatus } from "@/hooks/useShopStatus";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import ShopStatusButton from "@/components/shop/ShopStatusButton";
+import ShopClosed from "@/pages/ShopClosed";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -17,6 +20,7 @@ import {
   Wallet,
   User,
   Scissors,
+  Loader2,
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -37,6 +41,7 @@ const navItems = [
 export default function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, role, signOut, isOwner } = useAuth();
+  const { isOpen: isShopOpen, isLoading: isShopLoading } = useShopStatus();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -47,6 +52,20 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   const filteredNavItems = navItems.filter((item) => !item.ownerOnly || isOwner);
 
+  // Show loading while checking shop status
+  if (isShopLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Show shop closed page if shop is not open
+  if (!isShopOpen) {
+    return <ShopClosed />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
@@ -55,9 +74,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <Scissors className="h-6 w-6 text-primary" />
           <span className="font-semibold">Space Style</span>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <ShopStatusButton />
+          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </header>
 
       {/* Sidebar */}
@@ -104,8 +126,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
             })}
           </nav>
 
-          {/* User Info & Logout */}
+          {/* Shop Status & User Info & Logout */}
           <div className="p-4 border-t">
+            <div className="mb-3 px-4 hidden lg:block">
+              <ShopStatusButton />
+            </div>
             <div className="mb-3 px-4">
               <p className="text-sm font-medium truncate">{user?.email}</p>
               <p className="text-xs text-muted-foreground capitalize">{role}</p>
