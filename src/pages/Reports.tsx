@@ -76,7 +76,6 @@ export default function Reports() {
     const now = new Date();
     switch (filterType) {
       case 'today':
-        const now = new Date();
         const todayStart = format(startOfDay(now), 'yyyy-MM-dd');
         const todayEnd = format(endOfDay(now), 'yyyy-MM-dd');
         return { start: todayStart, end: todayEnd };
