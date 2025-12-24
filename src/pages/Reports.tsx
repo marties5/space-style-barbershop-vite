@@ -493,7 +493,7 @@ export default function Reports() {
 
             <Card className="border-2 border-primary">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-primary">Saldo Kas Saat Ini</CardTitle>
+                <CardTitle className="text-sm font-medium text-primary">Cash Saat Ini</CardTitle>
                 <Wallet className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
@@ -502,7 +502,7 @@ export default function Reports() {
                 >
                   {formatCurrency(cashReport.currentCashBalance)}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Setoran + Pendapatan - Pengeluaran - Penarikan</p>
+                <p className="text-xs text-muted-foreground mt-1">Setoran Cash + Pendapatan Cash - Pengeluaran Cash - Penarikan Cash</p>
               </CardContent>
             </Card>
           </div>
@@ -572,7 +572,7 @@ export default function Reports() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Wallet className="h-4 w-4 text-primary" />
-                        Saldo Kas Saat Ini
+                        Cash Saat Ini
                       </div>
                     </TableCell>
                     <TableCell
