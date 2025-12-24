@@ -54,7 +54,7 @@ interface CashReport {
 type FilterType = "custom" | "today" | "week" | "month" | "year";
 
 export default function Reports() {
-  const [filterType, setFilterType] = useState<FilterType>("week");
+  const [filterType, setFilterType] = useState<FilterType>("today");
   const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 7), "yyyy-MM-dd"));
   const [dateTo, setDateTo] = useState(format(new Date(), "yyyy-MM-dd"));
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
