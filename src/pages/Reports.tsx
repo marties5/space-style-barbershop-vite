@@ -60,6 +60,8 @@ export default function Reports() {
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedYear, setSelectedYear] = useState(format(new Date(), "yyyy"));
   const [totalRevenue, setTotalRevenue] = useState(0);
+  const [serviceRevenue, setServiceRevenue] = useState(0);
+  const [productRevenue, setProductRevenue] = useState(0);
   const [transactionCount, setTransactionCount] = useState(0);
   const [barberReports, setBarberReports] = useState<BarberReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -154,7 +156,8 @@ export default function Reports() {
       paymentData[method].count += 1;
     });
     setPaymentMethodReports(Object.values(paymentData).sort((a, b) => b.total - a.total));
-    const { data: items } = await supabase
+    // Fetch all transaction items (services and products)
+    const { data: allItems } = await supabase
       .from("transaction_items")
       .select(
         `
@@ -163,13 +166,18 @@ export default function Reports() {
       `,
       )
       .gte("created_at", startTime)
-      .lte("created_at", endTime)
-      .eq("item_type", "service");
+      .lte("created_at", endTime);
 
-    // Aggregate by barber
+    // Calculate service and product revenue
+    const svcRevenue = allItems?.filter((i) => i.item_type === "service").reduce((sum, i) => sum + Number(i.subtotal), 0) || 0;
+    const prdRevenue = allItems?.filter((i) => i.item_type === "product").reduce((sum, i) => sum + Number(i.subtotal), 0) || 0;
+    setServiceRevenue(svcRevenue);
+    setProductRevenue(prdRevenue);
+
+    // Aggregate by barber (services only)
     const barberData: Record<string, BarberReport> = {};
-    items?.forEach((item) => {
-      if (item.barbers) {
+    allItems?.forEach((item) => {
+      if (item.barbers && item.item_type === "service") {
         const name = item.barbers.name;
         if (!barberData[name]) {
           barberData[name] = {
@@ -405,7 +413,7 @@ export default function Reports() {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Summary Cards */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Pendapatan</CardTitle>
@@ -413,6 +421,26 @@ export default function Reports() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pendapatan Layanan</CardTitle>
+                <Users className="h-4 w-4 text-blue-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">{formatCurrency(serviceRevenue)}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pendapatan Produk</CardTitle>
+                <Receipt className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{formatCurrency(productRevenue)}</div>
               </CardContent>
             </Card>
 
@@ -428,7 +456,7 @@ export default function Reports() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Rata-rata per Transaksi</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Rata-rata Transaksi</CardTitle>
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
