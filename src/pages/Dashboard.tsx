@@ -5,6 +5,8 @@ import { TrendingUp, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import MonthlyRevenueChart from '@/components/dashboard/MonthlyRevenueChart';
+import DailyTrendChart from '@/components/dashboard/DailyTrendChart';
+import ExportButtons from '@/components/dashboard/ExportButtons';
 
 interface DailyStats {
   totalRevenue: number;
@@ -135,11 +137,17 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          {format(new Date(), 'EEEE, dd MMMM yyyy', { locale: localeId })}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">
+            {format(new Date(), 'EEEE, dd MMMM yyyy', { locale: localeId })}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground mb-2">Export Excel</p>
+          <ExportButtons />
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -198,6 +206,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Daily Trend Chart */}
+      <DailyTrendChart />
 
       {/* Monthly Revenue Chart */}
       <MonthlyRevenueChart />
