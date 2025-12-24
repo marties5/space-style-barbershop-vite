@@ -80,28 +80,42 @@ export default function Reports() {
   // Calculate effective date range based on filter type
   const getDateRange = () => {
     const now = new Date();
+
     switch (filterType) {
       case "today":
-        const todayStart = format(startOfDay(now), "yyyy-MM-dd HH:mm:ss");
-        const todayEnd = format(endOfDay(now), "yyyy-MM-dd HH:mm:ss");
-        return { start: todayStart, end: todayEnd };
+        return {
+          start: startOfDay(now).toISOString(),
+          end: endOfDay(now).toISOString(),
+        };
+
       case "week":
-        return { start: format(subDays(now, 7), "yyyy-MM-dd"), end: format(now, "yyyy-MM-dd") };
-      case "month":
-        const monthDate = new Date(selectedMonth + "-01");
         return {
-          start: format(startOfMonth(monthDate), "yyyy-MM-dd"),
-          end: format(endOfMonth(monthDate), "yyyy-MM-dd"),
+          start: startOfDay(subDays(now, 7)).toISOString(),
+          end: endOfDay(now).toISOString(),
         };
-      case "year":
-        const yearDate = new Date(parseInt(selectedYear), 0, 1);
+
+      case "month": {
+        const monthDate = new Date(`${selectedMonth}-01`);
         return {
-          start: format(startOfYear(yearDate), "yyyy-MM-dd"),
-          end: format(endOfYear(yearDate), "yyyy-MM-dd"),
+          start: startOfMonth(monthDate).toISOString(),
+          end: endOfMonth(monthDate).toISOString(),
         };
+      }
+
+      case "year": {
+        const yearDate = new Date(Number(selectedYear), 0, 1);
+        return {
+          start: startOfYear(yearDate).toISOString(),
+          end: endOfYear(yearDate).toISOString(),
+        };
+      }
+
       case "custom":
       default:
-        return { start: dateFrom, end: dateTo };
+        return {
+          start: new Date(`${dateFrom}T00:00:00`).toISOString(),
+          end: new Date(`${dateTo}T23:59:59`).toISOString(),
+        };
     }
   };
 
