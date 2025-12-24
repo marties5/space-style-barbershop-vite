@@ -23,6 +23,7 @@ import {
   Loader2,
   Download,
   Banknote,
+  History,
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -32,6 +33,7 @@ interface AppLayoutProps {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/transaction", label: "Transaksi", icon: ShoppingCart },
+  { href: "/transaction-history", label: "History", icon: History },
   { href: "/barbers", label: "Barber", icon: Users, ownerOnly: true },
   { href: "/items", label: "Layanan & Produk", icon: Package, ownerOnly: true },
   { href: "/expenses", label: "Pengeluaran", icon: Receipt },
