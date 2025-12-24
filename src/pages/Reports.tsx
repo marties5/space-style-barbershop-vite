@@ -1,20 +1,26 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfDay, endOfDay } from "date-fns";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfDay, endOfDay } from 'date-fns';
-import { Calendar, TrendingUp, Users, DollarSign, Receipt, Wallet, TrendingDown, Banknote, Smartphone, CreditCard, Building2 } from 'lucide-react';
-import { BarberDetailReport } from '@/components/reports/BarberDetailReport';
+  Calendar,
+  TrendingUp,
+  Users,
+  DollarSign,
+  Receipt,
+  Wallet,
+  TrendingDown,
+  Banknote,
+  Smartphone,
+  CreditCard,
+  Building2,
+} from "lucide-react";
+import { BarberDetailReport } from "@/components/reports/BarberDetailReport";
 
 interface BarberReport {
   barber_name: string;
@@ -45,14 +51,14 @@ interface CashReport {
   currentCashBalance: number;
 }
 
-type FilterType = 'custom' | 'today' | 'week' | 'month' | 'year';
+type FilterType = "custom" | "today" | "week" | "month" | "year";
 
 export default function Reports() {
-  const [filterType, setFilterType] = useState<FilterType>('week');
-  const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 7), 'yyyy-MM-dd'));
-  const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
-  const [selectedYear, setSelectedYear] = useState(format(new Date(), 'yyyy'));
+  const [filterType, setFilterType] = useState<FilterType>("week");
+  const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 7), "yyyy-MM-dd"));
+  const [dateTo, setDateTo] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
+  const [selectedYear, setSelectedYear] = useState(format(new Date(), "yyyy"));
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [transactionCount, setTransactionCount] = useState(0);
   const [barberReports, setBarberReports] = useState<BarberReport[]>([]);
@@ -75,25 +81,25 @@ export default function Reports() {
   const getDateRange = () => {
     const now = new Date();
     switch (filterType) {
-      case 'today':
-        const todayStart = format(startOfDay(now), 'yyyy-MM-dd');
-        const todayEnd = format(endOfDay(now), 'yyyy-MM-dd');
+      case "today":
+        const todayStart = format(startOfDay(now), "yyyy-MM-dd HH:mm:ss");
+        const todayEnd = format(endOfDay(now), "yyyy-MM-dd HH:mm:ss");
         return { start: todayStart, end: todayEnd };
-      case 'week':
-        return { start: format(subDays(now, 7), 'yyyy-MM-dd'), end: format(now, 'yyyy-MM-dd') };
-      case 'month':
-        const monthDate = new Date(selectedMonth + '-01');
+      case "week":
+        return { start: format(subDays(now, 7), "yyyy-MM-dd"), end: format(now, "yyyy-MM-dd") };
+      case "month":
+        const monthDate = new Date(selectedMonth + "-01");
         return {
-          start: format(startOfMonth(monthDate), 'yyyy-MM-dd'),
-          end: format(endOfMonth(monthDate), 'yyyy-MM-dd')
+          start: format(startOfMonth(monthDate), "yyyy-MM-dd"),
+          end: format(endOfMonth(monthDate), "yyyy-MM-dd"),
         };
-      case 'year':
+      case "year":
         const yearDate = new Date(parseInt(selectedYear), 0, 1);
         return {
-          start: format(startOfYear(yearDate), 'yyyy-MM-dd'),
-          end: format(endOfYear(yearDate), 'yyyy-MM-dd')
+          start: format(startOfYear(yearDate), "yyyy-MM-dd"),
+          end: format(endOfYear(yearDate), "yyyy-MM-dd"),
         };
-      case 'custom':
+      case "custom":
       default:
         return { start: dateFrom, end: dateTo };
     }
@@ -111,19 +117,19 @@ export default function Reports() {
 
     // Fetch transactions
     const { data: transactions } = await supabase
-      .from('transactions')
-      .select('*')
-      .gte('created_at', startTime)
-      .lte('created_at', endTime)
-      .eq('payment_status', 'completed');
+      .from("transactions")
+      .select("*")
+      .gte("created_at", startTime)
+      .lte("created_at", endTime)
+      .eq("payment_status", "completed");
 
     setTotalRevenue(transactions?.reduce((sum, t) => sum + Number(t.total_amount), 0) || 0);
     setTransactionCount(transactions?.length || 0);
 
     // Group by payment method
     const paymentData: Record<string, PaymentMethodReport> = {};
-    transactions?.forEach(tx => {
-      const method = tx.payment_method || 'cash';
+    transactions?.forEach((tx) => {
+      const method = tx.payment_method || "cash";
       if (!paymentData[method]) {
         paymentData[method] = { method, total: 0, count: 0 };
       }
@@ -132,18 +138,20 @@ export default function Reports() {
     });
     setPaymentMethodReports(Object.values(paymentData).sort((a, b) => b.total - a.total));
     const { data: items } = await supabase
-      .from('transaction_items')
-      .select(`
+      .from("transaction_items")
+      .select(
+        `
         *,
         barbers:barber_id (name)
-      `)
-      .gte('created_at', startTime)
-      .lte('created_at', endTime)
-      .eq('item_type', 'service');
+      `,
+      )
+      .gte("created_at", startTime)
+      .lte("created_at", endTime)
+      .eq("item_type", "service");
 
     // Aggregate by barber
     const barberData: Record<string, BarberReport> = {};
-    items?.forEach(item => {
+    items?.forEach((item) => {
       if (item.barbers) {
         const name = item.barbers.name;
         if (!barberData[name]) {
@@ -151,7 +159,7 @@ export default function Reports() {
             barber_name: name,
             service_count: 0,
             total_revenue: 0,
-            total_commission: 0
+            total_commission: 0,
           };
         }
         barberData[name].service_count += item.quantity;
@@ -164,16 +172,16 @@ export default function Reports() {
 
     // Fetch expenses
     const { data: expenses } = await supabase
-      .from('expenses')
-      .select('*')
-      .gte('created_at', startTime)
-      .lte('created_at', endTime);
+      .from("expenses")
+      .select("*")
+      .gte("created_at", startTime)
+      .lte("created_at", endTime);
 
     setTotalExpenses(expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0);
 
     // Group expenses by category
     const expenseData: Record<string, ExpenseReport> = {};
-    expenses?.forEach(expense => {
+    expenses?.forEach((expense) => {
       if (!expenseData[expense.category]) {
         expenseData[expense.category] = { category: expense.category, total: 0, count: 0 };
       }
@@ -184,27 +192,32 @@ export default function Reports() {
 
     // Fetch withdrawals
     const { data: withdrawals } = await supabase
-      .from('barber_withdrawals')
-      .select('*')
-      .gte('created_at', startTime)
-      .lte('created_at', endTime);
+      .from("barber_withdrawals")
+      .select("*")
+      .gte("created_at", startTime)
+      .lte("created_at", endTime);
 
     setTotalWithdrawals(withdrawals?.reduce((sum, w) => sum + Number(w.amount), 0) || 0);
 
     // Fetch initial deposits for cash report
     const { data: initialDeposits } = await supabase
-      .from('initial_deposits')
-      .select('*')
-      .gte('deposit_date', start)
-      .lte('deposit_date', end);
+      .from("initial_deposits")
+      .select("*")
+      .gte("deposit_date", start)
+      .lte("deposit_date", end);
 
     // Calculate cash report
-    const depositsCash = initialDeposits?.filter(d => d.deposit_type === 'cash').reduce((sum, d) => sum + Number(d.amount), 0) || 0;
-    const depositsBank = initialDeposits?.filter(d => d.deposit_type === 'bank').reduce((sum, d) => sum + Number(d.amount), 0) || 0;
-    const cashRevenue = transactions?.filter(t => t.payment_method === 'cash').reduce((sum, t) => sum + Number(t.total_amount), 0) || 0;
-    const cashExpenses = expenses?.filter(e => e.payment_method === 'cash').reduce((sum, e) => sum + Number(e.amount), 0) || 0;
-    const cashWithdrawals = withdrawals?.filter(w => w.payment_method === 'cash').reduce((sum, w) => sum + Number(w.amount), 0) || 0;
-    
+    const depositsCash =
+      initialDeposits?.filter((d) => d.deposit_type === "cash").reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+    const depositsBank =
+      initialDeposits?.filter((d) => d.deposit_type === "bank").reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+    const cashRevenue =
+      transactions?.filter((t) => t.payment_method === "cash").reduce((sum, t) => sum + Number(t.total_amount), 0) || 0;
+    const cashExpenses =
+      expenses?.filter((e) => e.payment_method === "cash").reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+    const cashWithdrawals =
+      withdrawals?.filter((w) => w.payment_method === "cash").reduce((sum, w) => sum + Number(w.amount), 0) || 0;
+
     setCashReport({
       totalCash: depositsCash,
       totalBank: depositsBank,
@@ -219,10 +232,10 @@ export default function Reports() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -241,41 +254,41 @@ export default function Reports() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Periode:</span>
             </div>
-            
+
             {/* Filter Type Buttons */}
             <div className="flex flex-wrap gap-2">
               <Button
-                variant={filterType === 'today' ? 'default' : 'outline'}
+                variant={filterType === "today" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilterType('today')}
+                onClick={() => setFilterType("today")}
               >
                 Hari Ini
               </Button>
               <Button
-                variant={filterType === 'week' ? 'default' : 'outline'}
+                variant={filterType === "week" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilterType('week')}
+                onClick={() => setFilterType("week")}
               >
                 7 Hari
               </Button>
               <Button
-                variant={filterType === 'month' ? 'default' : 'outline'}
+                variant={filterType === "month" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilterType('month')}
+                onClick={() => setFilterType("month")}
               >
                 Bulanan
               </Button>
               <Button
-                variant={filterType === 'year' ? 'default' : 'outline'}
+                variant={filterType === "year" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilterType('year')}
+                onClick={() => setFilterType("year")}
               >
                 Tahunan
               </Button>
               <Button
-                variant={filterType === 'custom' ? 'default' : 'outline'}
+                variant={filterType === "custom" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilterType('custom')}
+                onClick={() => setFilterType("custom")}
               >
                 Custom
               </Button>
@@ -284,7 +297,7 @@ export default function Reports() {
 
           {/* Conditional Filter Inputs */}
           <div className="mt-4">
-            {filterType === 'month' && (
+            {filterType === "month" && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Pilih Bulan:</span>
                 <Input
@@ -296,7 +309,7 @@ export default function Reports() {
               </div>
             )}
 
-            {filterType === 'year' && (
+            {filterType === "year" && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Pilih Tahun:</span>
                 <Select value={selectedYear} onValueChange={setSelectedYear}>
@@ -317,22 +330,12 @@ export default function Reports() {
               </div>
             )}
 
-            {filterType === 'custom' && (
+            {filterType === "custom" && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Rentang:</span>
-                <Input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-auto"
-                />
+                <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-auto" />
                 <span className="text-muted-foreground">-</span>
-                <Input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="w-auto"
-                />
+                <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-auto" />
               </div>
             )}
           </div>
@@ -353,9 +356,7 @@ export default function Reports() {
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Pendapatan
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Pendapatan</CardTitle>
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
@@ -365,9 +366,7 @@ export default function Reports() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Jumlah Transaksi
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Jumlah Transaksi</CardTitle>
                 <TrendingUp className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
@@ -377,9 +376,7 @@ export default function Reports() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Rata-rata per Transaksi
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Rata-rata per Transaksi</CardTitle>
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
@@ -402,9 +399,7 @@ export default function Reports() {
               {isLoading ? (
                 <div className="text-center py-8 text-muted-foreground">Memuat data...</div>
               ) : barberReports.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Tidak ada data untuk periode ini
-                </div>
+                <div className="text-center py-8 text-muted-foreground">Tidak ada data untuk periode ini</div>
               ) : (
                 <Table>
                   <TableHeader>
@@ -420,9 +415,11 @@ export default function Reports() {
                       <TableRow key={report.barber_name}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                              index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                            }`}>
+                            <div
+                              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                index === 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                              }`}
+                            >
                               {index + 1}
                             </div>
                             <span className="font-medium">{report.barber_name}</span>
@@ -449,9 +446,7 @@ export default function Reports() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Setoran Kas
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Setoran Kas</CardTitle>
                 <Wallet className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
@@ -462,9 +457,7 @@ export default function Reports() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Setoran Bank
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Setoran Bank</CardTitle>
                 <Building2 className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
@@ -475,9 +468,7 @@ export default function Reports() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Pendapatan Tunai
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pendapatan Tunai</CardTitle>
                 <Banknote className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
@@ -488,13 +479,13 @@ export default function Reports() {
 
             <Card className="border-2 border-primary">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-primary">
-                  Saldo Kas Saat Ini
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-primary">Saldo Kas Saat Ini</CardTitle>
                 <Wallet className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${cashReport.currentCashBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                <div
+                  className={`text-2xl font-bold ${cashReport.currentCashBalance >= 0 ? "text-primary" : "text-destructive"}`}
+                >
                   {formatCurrency(cashReport.currentCashBalance)}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Setoran + Pendapatan - Pengeluaran - Penarikan</p>
@@ -570,7 +561,9 @@ export default function Reports() {
                         Saldo Kas Saat Ini
                       </div>
                     </TableCell>
-                    <TableCell className={`text-right ${cashReport.currentCashBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                    <TableCell
+                      className={`text-right ${cashReport.currentCashBalance >= 0 ? "text-primary" : "text-destructive"}`}
+                    >
                       {formatCurrency(cashReport.currentCashBalance)}
                     </TableCell>
                   </TableRow>
@@ -586,24 +579,28 @@ export default function Reports() {
             {paymentMethodReports.map((pm) => {
               const getIcon = () => {
                 switch (pm.method) {
-                  case 'qris': return <Smartphone className="h-4 w-4 text-purple-500" />;
-                  case 'transfer': return <CreditCard className="h-4 w-4 text-blue-500" />;
-                  default: return <Banknote className="h-4 w-4 text-green-500" />;
+                  case "qris":
+                    return <Smartphone className="h-4 w-4 text-purple-500" />;
+                  case "transfer":
+                    return <CreditCard className="h-4 w-4 text-blue-500" />;
+                  default:
+                    return <Banknote className="h-4 w-4 text-green-500" />;
                 }
               };
               const getColor = () => {
                 switch (pm.method) {
-                  case 'qris': return 'text-purple-500';
-                  case 'transfer': return 'text-blue-500';
-                  default: return 'text-green-500';
+                  case "qris":
+                    return "text-purple-500";
+                  case "transfer":
+                    return "text-blue-500";
+                  default:
+                    return "text-green-500";
                 }
               };
               return (
                 <Card key={pm.method}>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase">
-                      {pm.method}
-                    </CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase">{pm.method}</CardTitle>
                     {getIcon()}
                   </CardHeader>
                   <CardContent>
@@ -632,9 +629,7 @@ export default function Reports() {
               {isLoading ? (
                 <div className="text-center py-8 text-muted-foreground">Memuat data...</div>
               ) : paymentMethodReports.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Tidak ada data untuk periode ini
-                </div>
+                <div className="text-center py-8 text-muted-foreground">Tidak ada data untuk periode ini</div>
               ) : (
                 <Table>
                   <TableHeader>
@@ -661,9 +656,7 @@ export default function Reports() {
                     <TableRow className="font-bold">
                       <TableCell>Total</TableCell>
                       <TableCell className="text-right">{transactionCount}</TableCell>
-                      <TableCell className="text-right text-primary">
-                        {formatCurrency(totalRevenue)}
-                      </TableCell>
+                      <TableCell className="text-right text-primary">{formatCurrency(totalRevenue)}</TableCell>
                       <TableCell className="text-right">100%</TableCell>
                     </TableRow>
                   </TableBody>
@@ -682,9 +675,7 @@ export default function Reports() {
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Pendapatan
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pendapatan</CardTitle>
                 <DollarSign className="h-4 w-4 text-green-600" />
               </CardHeader>
               <CardContent>
@@ -694,9 +685,7 @@ export default function Reports() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Pengeluaran
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pengeluaran</CardTitle>
                 <Receipt className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
@@ -706,9 +695,7 @@ export default function Reports() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Penarikan Barber
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Penarikan Barber</CardTitle>
                 <Wallet className="h-4 w-4 text-orange-500" />
               </CardHeader>
               <CardContent>
@@ -718,13 +705,13 @@ export default function Reports() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Laba Bersih
-                </CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Laba Bersih</CardTitle>
                 <TrendingDown className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${(totalRevenue - totalExpenses - totalWithdrawals) >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                <div
+                  className={`text-2xl font-bold ${totalRevenue - totalExpenses - totalWithdrawals >= 0 ? "text-green-600" : "text-destructive"}`}
+                >
                   {formatCurrency(totalRevenue - totalExpenses - totalWithdrawals)}
                 </div>
               </CardContent>
@@ -760,9 +747,7 @@ export default function Reports() {
                       <TableRow key={expense.category}>
                         <TableCell className="font-medium capitalize">{expense.category}</TableCell>
                         <TableCell className="text-right">{expense.count}</TableCell>
-                        <TableCell className="text-right text-destructive">
-                          {formatCurrency(expense.total)}
-                        </TableCell>
+                        <TableCell className="text-right text-destructive">{formatCurrency(expense.total)}</TableCell>
                       </TableRow>
                     ))}
                     <TableRow className="font-bold">
@@ -770,9 +755,7 @@ export default function Reports() {
                       <TableCell className="text-right">
                         {expensesByCategory.reduce((sum, e) => sum + e.count, 0)}
                       </TableCell>
-                      <TableCell className="text-right text-destructive">
-                        {formatCurrency(totalExpenses)}
-                      </TableCell>
+                      <TableCell className="text-right text-destructive">{formatCurrency(totalExpenses)}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
