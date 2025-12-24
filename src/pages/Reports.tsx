@@ -21,6 +21,7 @@ import {
   Building2,
 } from "lucide-react";
 import { BarberDetailReport } from "@/components/reports/BarberDetailReport";
+import ReportExportButtons from "@/components/reports/ReportExportButtons";
 
 interface BarberReport {
   barber_name: string;
@@ -91,12 +92,14 @@ export default function Reports() {
         return {
           start: startOfDay(now).toISOString(),
           end: endOfDay(now).toISOString(),
+          label: "hari_ini",
         };
 
       case "week":
         return {
           start: startOfDay(subDays(now, 7)).toISOString(),
           end: endOfDay(now).toISOString(),
+          label: "7_hari",
         };
 
       case "month": {
@@ -104,6 +107,7 @@ export default function Reports() {
         return {
           start: startOfMonth(monthDate).toISOString(),
           end: endOfMonth(monthDate).toISOString(),
+          label: selectedMonth.replace("-", "_"),
         };
       }
 
@@ -112,6 +116,7 @@ export default function Reports() {
         return {
           start: startOfYear(yearDate).toISOString(),
           end: endOfYear(yearDate).toISOString(),
+          label: selectedYear,
         };
       }
 
@@ -120,9 +125,12 @@ export default function Reports() {
         return {
           start: new Date(`${dateFrom}T00:00:00`).toISOString(),
           end: new Date(`${dateTo}T23:59:59`).toISOString(),
+          label: `${dateFrom}_${dateTo}`,
         };
     }
   };
+
+  const currentDateRange = getDateRange();
 
   useEffect(() => {
     fetchReports();
@@ -301,9 +309,15 @@ export default function Reports() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold">Laporan</h1>
-        <p className="text-muted-foreground">Analisis performa bisnis</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Laporan</h1>
+          <p className="text-muted-foreground">Analisis performa bisnis</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground mb-2">Export Excel</p>
+          <ReportExportButtons dateRange={currentDateRange} filterLabel={currentDateRange.label} />
+        </div>
       </div>
 
       {/* Date Filter */}
