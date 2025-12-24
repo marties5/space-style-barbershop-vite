@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Scissors, Package, Upload, X } from 'lucide-react';
 import { serviceSchema, productSchema, validateForm } from '@/lib/validations';
+import TopItemsChart from '@/components/items/TopItemsChart';
 
 interface Item {
   id: string;
@@ -243,6 +244,12 @@ export default function ItemsManagement() {
       <div>
         <h1 className="text-2xl font-bold">Layanan & Produk</h1>
         <p className="text-muted-foreground">Kelola layanan dan produk barbershop</p>
+      </div>
+
+      {/* Top Items Charts */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <TopItemsChart type="service" />
+        <TopItemsChart type="product" />
       </div>
 
       <div className="relative max-w-sm">
