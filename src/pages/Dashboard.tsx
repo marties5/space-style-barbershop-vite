@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, ShoppingCart, Users, DollarSign } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import InitialDepositCard from '@/components/dashboard/InitialDepositCard';
 import MonthlyRevenueChart from '@/components/dashboard/MonthlyRevenueChart';
 
 interface DailyStats {
@@ -29,16 +28,16 @@ export default function Dashboard() {
   }, []);
 
   const fetchDashboardData = async () => {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const startOfDay = `${today}T00:00:00`;
-    const endOfDay = `${today}T23:59:59`;
+    const now = new Date();
+    const todayStart = startOfDay(now).toISOString();
+    const todayEnd = endOfDay(now).toISOString();
 
     // Fetch today's transactions
     const { data: transactions } = await supabase
       .from('transactions')
       .select('*')
-      .gte('created_at', startOfDay)
-      .lte('created_at', endOfDay)
+      .gte('created_at', todayStart)
+      .lte('created_at', todayEnd)
       .eq('payment_status', 'completed');
 
     // Fetch today's transaction items with barber info
@@ -48,8 +47,8 @@ export default function Dashboard() {
         *,
         barbers:barber_id (name)
       `)
-      .gte('created_at', startOfDay)
-      .lte('created_at', endOfDay);
+      .gte('created_at', todayStart)
+      .lte('created_at', todayEnd);
 
     // Calculate stats
     const totalRevenue = transactions?.reduce((sum, t) => sum + Number(t.total_amount), 0) || 0;
@@ -145,19 +144,6 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <InitialDepositCard todayRevenue={stats.totalRevenue} />
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pendapatan Hari Ini
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
