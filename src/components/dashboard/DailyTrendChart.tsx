@@ -15,7 +15,7 @@ interface TrendData {
   transactions: number;
 }
 
-type FilterType = 'daily' | 'monthly' | 'custom';
+type FilterType = 'daily' | 'monthly' | 'sixMonths' | 'custom';
 
 export default function DailyTrendChart() {
   const [data, setData] = useState<TrendData[]>([]);
@@ -52,6 +52,30 @@ export default function DailyTrendChart() {
         trendData.push({
           date: format(date, 'yyyy-MM-dd'),
           label: format(date, 'dd MMM', { locale: localeId }),
+          revenue: transactions?.reduce((sum, t) => sum + Number(t.total_amount), 0) || 0,
+          transactions: transactions?.length || 0
+        });
+      }
+    } else if (filterType === 'sixMonths') {
+      const months = eachMonthOfInterval({
+        start: subMonths(new Date(), 5),
+        end: new Date()
+      });
+
+      for (const date of months) {
+        const start = startOfMonth(date).toISOString();
+        const end = endOfMonth(date).toISOString();
+
+        const { data: transactions } = await supabase
+          .from('transactions')
+          .select('total_amount')
+          .gte('created_at', start)
+          .lte('created_at', end)
+          .eq('payment_status', 'completed');
+
+        trendData.push({
+          date: format(date, 'yyyy-MM'),
+          label: format(date, 'MMM yy', { locale: localeId }),
           revenue: transactions?.reduce((sum, t) => sum + Number(t.total_amount), 0) || 0,
           transactions: transactions?.length || 0
         });
@@ -112,6 +136,7 @@ export default function DailyTrendChart() {
   const getTitle = () => {
     switch (filterType) {
       case 'daily': return 'Trend Harian (14 Hari Terakhir)';
+      case 'sixMonths': return 'Trend Pendapatan (6 Bulan Terakhir)';
       case 'monthly': return 'Trend Bulanan (12 Bulan Terakhir)';
       case 'custom': return 'Trend Pendapatan (Rentang Custom)';
     }
@@ -158,11 +183,18 @@ export default function DailyTrendChart() {
               Harian
             </Button>
             <Button
+              variant={filterType === 'sixMonths' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterType('sixMonths')}
+            >
+              6 Bulan
+            </Button>
+            <Button
               variant={filterType === 'monthly' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilterType('monthly')}
             >
-              Bulanan
+              12 Bulan
             </Button>
             <Button
               variant={filterType === 'custom' ? 'default' : 'outline'}
