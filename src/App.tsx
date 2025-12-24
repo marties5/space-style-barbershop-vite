@@ -10,6 +10,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Transaction from "./pages/Transaction";
+import TransactionHistory from "./pages/TransactionHistory";
 import Barbers from "./pages/Barbers";
 import ItemsManagement from "./pages/ItemsManagement";
 import Reports from "./pages/Reports";
@@ -41,6 +42,11 @@ const App = () => (
               <Route path="/transaction" element={
                 <ProtectedRoute>
                   <AppLayout><Transaction /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/transaction-history" element={
+                <ProtectedRoute>
+                  <AppLayout><TransactionHistory /></AppLayout>
                 </ProtectedRoute>
               } />
               <Route path="/barbers" element={
