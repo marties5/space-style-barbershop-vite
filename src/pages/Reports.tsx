@@ -76,6 +76,9 @@ export default function Reports() {
     cashWithdrawals: 0,
     currentCashBalance: 0,
   });
+  // Cumulative totals (from beginning up to filter end date)
+  const [cumulativeNetProfit, setCumulativeNetProfit] = useState(0);
+  const [cumulativeCashBalance, setCumulativeCashBalance] = useState(0);
 
   // Calculate effective date range based on filter type
   const getDateRange = () => {
@@ -213,14 +216,14 @@ export default function Reports() {
 
     setTotalWithdrawals(withdrawals?.reduce((sum, w) => sum + Number(w.amount), 0) || 0);
 
-    // Fetch initial deposits for cash report
+    // Fetch initial deposits for cash report (within filter period)
     const { data: initialDeposits } = await supabase
       .from("initial_deposits")
       .select("*")
       .gte("deposit_date", start)
       .lte("deposit_date", end);
 
-    // Calculate cash report
+    // Calculate cash report for the filtered period
     const depositsCash =
       initialDeposits?.filter((d) => d.deposit_type === "cash").reduce((sum, d) => sum + Number(d.amount), 0) || 0;
     const depositsBank =
@@ -241,6 +244,41 @@ export default function Reports() {
       cashWithdrawals,
       currentCashBalance: depositsCash + cashRevenue - cashExpenses - cashWithdrawals,
     });
+
+    // Fetch CUMULATIVE data (from beginning up to filter end date) for Laba Bersih and Cash Saat Ini
+    const { data: cumTransactions } = await supabase
+      .from("transactions")
+      .select("*")
+      .lte("created_at", endTime)
+      .eq("payment_status", "completed");
+
+    const { data: cumExpenses } = await supabase
+      .from("expenses")
+      .select("*")
+      .lte("created_at", endTime);
+
+    const { data: cumWithdrawals } = await supabase
+      .from("barber_withdrawals")
+      .select("*")
+      .lte("created_at", endTime);
+
+    const { data: cumDeposits } = await supabase
+      .from("initial_deposits")
+      .select("*")
+      .lte("deposit_date", end);
+
+    const cumTotalRevenue = cumTransactions?.reduce((sum, t) => sum + Number(t.total_amount), 0) || 0;
+    const cumTotalExpenses = cumExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+    const cumTotalWithdrawals = cumWithdrawals?.reduce((sum, w) => sum + Number(w.amount), 0) || 0;
+
+    setCumulativeNetProfit(cumTotalRevenue - cumTotalExpenses - cumTotalWithdrawals);
+
+    const cumDepositsCash = cumDeposits?.filter((d) => d.deposit_type === "cash").reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+    const cumCashRevenue = cumTransactions?.filter((t) => t.payment_method === "cash").reduce((sum, t) => sum + Number(t.total_amount), 0) || 0;
+    const cumCashExpenses = cumExpenses?.filter((e) => e.payment_method === "cash").reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+    const cumCashWithdrawals = cumWithdrawals?.filter((w) => w.payment_method === "cash").reduce((sum, w) => sum + Number(w.amount), 0) || 0;
+
+    setCumulativeCashBalance(cumDepositsCash + cumCashRevenue - cumCashExpenses - cumCashWithdrawals);
 
     setIsLoading(false);
   };
@@ -498,11 +536,11 @@ export default function Reports() {
               </CardHeader>
               <CardContent>
                 <div
-                  className={`text-2xl font-bold ${cashReport.currentCashBalance >= 0 ? "text-primary" : "text-destructive"}`}
+                  className={`text-2xl font-bold ${cumulativeCashBalance >= 0 ? "text-primary" : "text-destructive"}`}
                 >
-                  {formatCurrency(cashReport.currentCashBalance)}
+                  {formatCurrency(cumulativeCashBalance)}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Setoran Cash + Pendapatan Cash - Pengeluaran Cash - Penarikan Cash</p>
+                <p className="text-xs text-muted-foreground mt-1">Total kumulatif hingga saat ini</p>
               </CardContent>
             </Card>
           </div>
@@ -572,13 +610,13 @@ export default function Reports() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Wallet className="h-4 w-4 text-primary" />
-                        Cash Saat Ini
+                        Cash Saat Ini (Kumulatif)
                       </div>
                     </TableCell>
                     <TableCell
-                      className={`text-right ${cashReport.currentCashBalance >= 0 ? "text-primary" : "text-destructive"}`}
+                      className={`text-right ${cumulativeCashBalance >= 0 ? "text-primary" : "text-destructive"}`}
                     >
-                      {formatCurrency(cashReport.currentCashBalance)}
+                      {formatCurrency(cumulativeCashBalance)}
                     </TableCell>
                   </TableRow>
                 </TableBody>
@@ -717,17 +755,18 @@ export default function Reports() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-2 border-primary">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Laba Bersih</CardTitle>
+                <CardTitle className="text-sm font-medium text-primary">Laba Bersih</CardTitle>
                 <TrendingDown className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <div
-                  className={`text-2xl font-bold ${totalRevenue - totalExpenses - totalWithdrawals >= 0 ? "text-green-600" : "text-destructive"}`}
+                  className={`text-2xl font-bold ${cumulativeNetProfit >= 0 ? "text-green-600" : "text-destructive"}`}
                 >
-                  {formatCurrency(totalRevenue - totalExpenses - totalWithdrawals)}
+                  {formatCurrency(cumulativeNetProfit)}
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">Total kumulatif hingga saat ini</p>
               </CardContent>
             </Card>
           </div>
