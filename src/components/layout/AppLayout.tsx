@@ -47,10 +47,12 @@ const navItems = [
 export default function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, role, signOut, isOwner } = useAuth();
+  
   const { isOpen: isShopOpen, isLoading: isShopLoading } = useShopStatus();
   const location = useLocation();
   const navigate = useNavigate();
 
+  console.log("User:", user,isOwner);
   const handleSignOut = async () => {
     await signOut();
     navigate("/auth");

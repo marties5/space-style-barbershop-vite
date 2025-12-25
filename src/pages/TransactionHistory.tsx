@@ -69,7 +69,7 @@ export default function TransactionHistory() {
   const [itemType, setItemType] = useState<string>("all");
   
   const [barbers, setBarbers] = useState<Barber[]>([]);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   
   // Detail modal
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -277,7 +277,6 @@ export default function TransactionHistory() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Quick Date Presets */}
           <div className="flex flex-wrap gap-2">
             {[
               { value: 'today', label: 'Hari Ini' },
