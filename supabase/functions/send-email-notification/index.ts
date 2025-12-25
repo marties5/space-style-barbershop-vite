@@ -162,12 +162,15 @@ serve(async (req) => {
       );
     }
 
-    // Create SMTP client
+    // Create SMTP client with proper TLS configuration
+    // Port 465 uses direct SSL/TLS, Port 587 uses STARTTLS
+    const useDirectTLS = settings.smtp_port === 465;
+    
     const client = new SMTPClient({
       connection: {
         hostname: settings.smtp_host,
         port: settings.smtp_port,
-        tls: true,
+        tls: useDirectTLS,
         auth: {
           username: settings.smtp_user,
           password: settings.smtp_password,
