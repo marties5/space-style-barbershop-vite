@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { sendEmailNotification } from '@/hooks/useEmailSettings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -184,6 +185,14 @@ export default function Transaction() {
         .insert(transactionItems);
 
       if (itemsError) throw itemsError;
+
+      // Send email notification
+      sendEmailNotification('transaction', {
+        total,
+        paymentMethod,
+        discount: discountAmount,
+        itemCount: cart.length
+      });
 
       toast.success(`Transaksi berhasil! Total: ${formatCurrency(total)} (${paymentMethod.toUpperCase()})`);
       setCart([]);

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { sendEmailNotification } from "@/hooks/useEmailSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -80,6 +81,17 @@ export default function Withdrawals() {
         user_id: user?.id,
       });
       if (error) throw error;
+
+      // Get barber name for email notification
+      const barber = barbers?.find(b => b.id === barberId);
+      
+      // Send email notification
+      sendEmailNotification('withdrawal', {
+        barberName: barber?.name || 'Unknown',
+        amount: parseFloat(amount),
+        paymentMethod,
+        notes: notes || null
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["withdrawals"] });
