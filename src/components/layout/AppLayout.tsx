@@ -13,23 +13,16 @@ import {
   LayoutDashboard,
   Loader2,
   LogOut,
+  Mail,
   Menu,
   Package,
   Receipt,
   Scissors,
-<<<<<<< HEAD
   ShoppingCart,
   User,
   Users,
   Wallet,
   X,
-=======
-  Loader2,
-  Download,
-  Banknote,
-  History,
-  Mail,
->>>>>>> 9dd5e4c5f2bb36f7b165fd3b8c64955cbac500d2
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
