@@ -79,6 +79,29 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
   }
 };
 
+// Function to log email to database
+const logEmail = async (
+  supabaseClient: any,
+  emailType: string,
+  recipientEmail: string,
+  subject: string,
+  status: "success" | "failed",
+  errorMessage?: string
+) => {
+  try {
+    await supabaseClient.from("email_logs").insert({
+      email_type: emailType,
+      recipient_email: recipientEmail,
+      subject: subject,
+      status: status,
+      error_message: errorMessage || null,
+      sent_at: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Failed to log email:", error);
+  }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -154,7 +177,7 @@ serve(async (req) => {
 
     const template = getEmailTemplate(type, data);
 
-    // Send to all recipients
+    // Send to all recipients and log results
     const sendPromises = settings.recipient_emails.map(async (email: string) => {
       try {
         await client.send({
@@ -165,10 +188,18 @@ serve(async (req) => {
           html: template.html,
         });
         console.log(`Email sent to ${email}`);
+        
+        // Log successful email
+        await logEmail(supabase, type, email, template.subject, "success");
+        
         return { email, success: true };
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error(`Failed to send email to ${email}:`, error);
+        
+        // Log failed email
+        await logEmail(supabase, type, email, template.subject, "failed", errorMessage);
+        
         return { email, success: false, error: errorMessage };
       }
     });
