@@ -19,6 +19,7 @@ import Withdrawals from "./pages/Withdrawals";
 import CashRegister from "./pages/CashRegister";
 import Profile from "./pages/Profile";
 import Install from "./pages/Install";
+import EmailSettings from "./pages/EmailSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -82,6 +83,11 @@ const App = () => (
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <AppLayout><Profile /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/email-settings" element={
+                <ProtectedRoute requireOwner>
+                  <AppLayout><EmailSettings /></AppLayout>
                 </ProtectedRoute>
               } />
               <Route path="/install" element={<Install />} />

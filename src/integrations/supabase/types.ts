@@ -88,6 +88,60 @@ export type Database = {
         }
         Relationships: []
       }
+      email_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          notify_shop_close: boolean
+          notify_shop_open: boolean
+          notify_transaction: boolean
+          notify_withdrawal: boolean
+          recipient_emails: string[]
+          smtp_from_email: string
+          smtp_from_name: string
+          smtp_host: string
+          smtp_password: string
+          smtp_port: number
+          smtp_user: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notify_shop_close?: boolean
+          notify_shop_open?: boolean
+          notify_transaction?: boolean
+          notify_withdrawal?: boolean
+          recipient_emails?: string[]
+          smtp_from_email?: string
+          smtp_from_name?: string
+          smtp_host?: string
+          smtp_password?: string
+          smtp_port?: number
+          smtp_user?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notify_shop_close?: boolean
+          notify_shop_open?: boolean
+          notify_transaction?: boolean
+          notify_withdrawal?: boolean
+          recipient_emails?: string[]
+          smtp_from_email?: string
+          smtp_from_name?: string
+          smtp_host?: string
+          smtp_password?: string
+          smtp_port?: number
+          smtp_user?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           amount: number

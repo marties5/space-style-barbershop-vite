@@ -24,6 +24,7 @@ import {
   Download,
   Banknote,
   History,
+  Mail,
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -40,6 +41,7 @@ const navItems = [
   { href: "/withdrawals", label: "Withdraw", icon: Wallet },
   { href: "/cash-register", label: "Setoran Awal", icon: Banknote },
   { href: "/reports", label: "Laporan", icon: BarChart3 },
+  { href: "/email-settings", label: "Email", icon: Mail, ownerOnly: true },
   { href: "/profile", label: "Profil", icon: User },
   { href: "/install", label: "Install App", icon: Download },
 ];
