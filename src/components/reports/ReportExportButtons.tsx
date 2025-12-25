@@ -56,6 +56,8 @@ export default function ReportExportButtons({ dateRange, filterLabel }: ReportEx
           'Harga Satuan': formatCurrency(item.unit_price),
           'Subtotal': formatCurrency(item.subtotal),
           'Komisi': formatCurrency(item.commission_amount || 0),
+          'Diskon': tx.discount_amount > 0 ? formatCurrency(tx.discount_amount) : '-',
+          'Tipe Diskon': tx.discount_type === 'percent' ? `${tx.discount_percent}%` : tx.discount_type === 'fixed' ? 'Nominal' : '-',
           'Metode Bayar': tx.payment_method === 'cash' ? 'Tunai' : tx.payment_method === 'transfer' ? 'Transfer' : 'QRIS',
           'Status': tx.payment_status === 'completed' ? 'Selesai' : 'Pending',
           'Total Transaksi': formatCurrency(tx.total_amount)
@@ -210,6 +212,8 @@ export default function ReportExportButtons({ dateRange, filterLabel }: ReportEx
           'Harga Satuan': formatCurrency(item.unit_price),
           'Subtotal': formatCurrency(item.subtotal),
           'Komisi': formatCurrency(item.commission_amount || 0),
+          'Diskon': tx.discount_amount > 0 ? formatCurrency(tx.discount_amount) : '-',
+          'Tipe Diskon': tx.discount_type === 'percent' ? `${tx.discount_percent}%` : tx.discount_type === 'fixed' ? 'Nominal' : '-',
           'Metode Bayar': tx.payment_method === 'cash' ? 'Tunai' : tx.payment_method === 'transfer' ? 'Transfer' : 'QRIS',
           'Status': tx.payment_status === 'completed' ? 'Selesai' : 'Pending',
           'Total Transaksi': formatCurrency(tx.total_amount)

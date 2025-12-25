@@ -19,6 +19,7 @@ import {
   Smartphone,
   CreditCard,
   Building2,
+  Percent,
 } from "lucide-react";
 import { BarberDetailReport } from "@/components/reports/BarberDetailReport";
 import ReportExportButtons from "@/components/reports/ReportExportButtons";
@@ -68,6 +69,7 @@ export default function Reports() {
   const [isLoading, setIsLoading] = useState(true);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalWithdrawals, setTotalWithdrawals] = useState(0);
+  const [totalDiscount, setTotalDiscount] = useState(0);
   const [expensesByCategory, setExpensesByCategory] = useState<ExpenseReport[]>([]);
   const [paymentMethodReports, setPaymentMethodReports] = useState<PaymentMethodReport[]>([]);
   const [cashReport, setCashReport] = useState<CashReport>({
@@ -152,6 +154,7 @@ export default function Reports() {
 
     setTotalRevenue(transactions?.reduce((sum, t) => sum + Number(t.total_amount), 0) || 0);
     setTransactionCount(transactions?.length || 0);
+    setTotalDiscount(transactions?.reduce((sum, t) => sum + Number(t.discount_amount || 0), 0) || 0);
 
     // Group by payment method
     const paymentData: Record<string, PaymentMethodReport> = {};
@@ -427,7 +430,7 @@ export default function Reports() {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Summary Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Pendapatan</CardTitle>
@@ -477,6 +480,16 @@ export default function Reports() {
                 <div className="text-2xl font-bold">
                   {formatCurrency(transactionCount > 0 ? totalRevenue / transactionCount : 0)}
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Diskon</CardTitle>
+                <Percent className="h-4 w-4 text-orange-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-600">{formatCurrency(totalDiscount)}</div>
               </CardContent>
             </Card>
           </div>
