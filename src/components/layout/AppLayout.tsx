@@ -1,30 +1,30 @@
-import { ReactNode, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import ShopStatusButton from "@/components/shop/ShopStatusButton";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useShopStatus } from "@/hooks/useShopStatus";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import ShopStatusButton from "@/components/shop/ShopStatusButton";
 import ShopClosed from "@/pages/ShopClosed";
 import {
-  LayoutDashboard,
-  ShoppingCart,
-  Users,
-  Package,
+  Banknote,
   BarChart3,
+  ChevronRight,
+  Download,
+  History,
+  LayoutDashboard,
+  Loader2,
   LogOut,
   Menu,
-  X,
-  ChevronRight,
+  Package,
   Receipt,
-  Wallet,
-  User,
   Scissors,
-  Loader2,
-  Download,
-  Banknote,
-  History,
+  ShoppingCart,
+  User,
+  Users,
+  Wallet,
+  X,
 } from "lucide-react";
+import { ReactNode, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -56,7 +56,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
     navigate("/auth");
   };
 
-  const filteredNavItems = navItems.filter((item) => !item.ownerOnly || isOwner);
+  const filteredNavItems = navItems.filter(
+    (item) => !item.ownerOnly || isOwner
+  );
 
   // Show loading while checking shop status
   if (isShopLoading) {
@@ -82,8 +84,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </div>
         <div className="flex items-center gap-2">
           <ShopStatusButton />
-          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
-            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {sidebarOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </header>
@@ -93,7 +103,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         className={cn(
           "fixed top-0 left-0 h-full w-64 bg-card border-r z-40 transition-transform duration-300",
           "lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
@@ -118,10 +128,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
+                    "flex items-center gap-3 border px-4 py-3 rounded-lg text-sm font-medium transition-all",
                     isActive
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
                   <item.icon className="h-5 w-5" />
