@@ -88,6 +88,93 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          created_at: string
+          email_type: string
+          error_message: string | null
+          id: string
+          recipient_email: string
+          sent_at: string
+          status: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          email_type: string
+          error_message?: string | null
+          id?: string
+          recipient_email: string
+          sent_at?: string
+          status?: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          email_type?: string
+          error_message?: string | null
+          id?: string
+          recipient_email?: string
+          sent_at?: string
+          status?: string
+          subject?: string
+        }
+        Relationships: []
+      }
+      email_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          notify_shop_close: boolean
+          notify_shop_open: boolean
+          notify_transaction: boolean
+          notify_withdrawal: boolean
+          recipient_emails: string[]
+          smtp_from_email: string
+          smtp_from_name: string
+          smtp_host: string
+          smtp_password: string
+          smtp_port: number
+          smtp_user: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notify_shop_close?: boolean
+          notify_shop_open?: boolean
+          notify_transaction?: boolean
+          notify_withdrawal?: boolean
+          recipient_emails?: string[]
+          smtp_from_email?: string
+          smtp_from_name?: string
+          smtp_host?: string
+          smtp_password?: string
+          smtp_port?: number
+          smtp_user?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notify_shop_close?: boolean
+          notify_shop_open?: boolean
+          notify_transaction?: boolean
+          notify_withdrawal?: boolean
+          recipient_emails?: string[]
+          smtp_from_email?: string
+          smtp_from_name?: string
+          smtp_host?: string
+          smtp_password?: string
+          smtp_port?: number
+          smtp_user?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           amount: number
@@ -283,6 +370,8 @@ export type Database = {
           commission_amount: number | null
           commission_rate: number | null
           created_at: string
+          discount_amount: number
+          discount_percent: number | null
           id: string
           item_id: string | null
           item_name: string
@@ -297,6 +386,8 @@ export type Database = {
           commission_amount?: number | null
           commission_rate?: number | null
           created_at?: string
+          discount_amount?: number
+          discount_percent?: number | null
           id?: string
           item_id?: string | null
           item_name: string
@@ -311,6 +402,8 @@ export type Database = {
           commission_amount?: number | null
           commission_rate?: number | null
           created_at?: string
+          discount_amount?: number
+          discount_percent?: number | null
           id?: string
           item_id?: string | null
           item_name?: string
@@ -347,6 +440,9 @@ export type Database = {
       transactions: {
         Row: {
           created_at: string
+          discount_amount: number
+          discount_percent: number | null
+          discount_type: string | null
           id: string
           notes: string | null
           payment_method: string
@@ -356,6 +452,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          discount_amount?: number
+          discount_percent?: number | null
+          discount_type?: string | null
           id?: string
           notes?: string | null
           payment_method?: string
@@ -365,6 +464,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          discount_amount?: number
+          discount_percent?: number | null
+          discount_type?: string | null
           id?: string
           notes?: string | null
           payment_method?: string

@@ -30,6 +30,9 @@ interface Transaction {
   payment_status: string;
   notes: string | null;
   created_at: string;
+  discount_amount?: number;
+  discount_percent?: number;
+  discount_type?: string;
 }
 
 interface TransactionItem {
@@ -548,6 +551,17 @@ export default function TransactionHistory() {
                   <span className="text-muted-foreground">Pembayaran:</span>
                   <p>{getPaymentMethodBadge(selectedTransaction.payment_method)}</p>
                 </div>
+                {selectedTransaction.discount_amount && selectedTransaction.discount_amount > 0 && (
+                  <div className="col-span-2">
+                    <span className="text-muted-foreground">Diskon Member:</span>
+                    <p className="text-green-600 font-medium">
+                      -{formatCurrency(selectedTransaction.discount_amount)}
+                      {selectedTransaction.discount_type === 'percent' && selectedTransaction.discount_percent && (
+                        <span className="text-sm text-muted-foreground ml-1">({selectedTransaction.discount_percent}%)</span>
+                      )}
+                    </p>
+                  </div>
+                )}
                 {selectedTransaction.notes && (
                   <div className="col-span-2">
                     <span className="text-muted-foreground">Catatan:</span>

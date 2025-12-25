@@ -1,3 +1,4 @@
+import { sendEmailNotification } from '@/hooks/useEmailSettings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Banknote, CreditCard, Minus, Package, Plus, Scissors, ShoppingCart, Smartphone, Trash2, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Item {
   id: string;
@@ -45,6 +47,8 @@ export default function Transaction() {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris' | 'transfer'>('cash');
   const [cashReceived, setCashReceived] = useState<string>('');
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [discountType, setDiscountType] = useState<'none' | 'percent' | 'fixed'>('none');
+  const [discountValue, setDiscountValue] = useState<string>('');
 
   useEffect(() => {
     fetchData();
@@ -113,7 +117,20 @@ export default function Transaction() {
     setCart(prev => prev.filter((_, i) => i !== index));
   };
 
-  const total = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
+  const subtotal = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
+  
+  // Calculate discount
+  const calculateDiscount = () => {
+    if (discountType === 'none' || !discountValue) return 0;
+    const value = Number(discountValue);
+    if (discountType === 'percent') {
+      return Math.min((subtotal * value) / 100, subtotal);
+    }
+    return Math.min(value, subtotal);
+  };
+  
+  const discountAmount = calculateDiscount();
+  const total = subtotal - discountAmount;
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
@@ -131,7 +148,10 @@ export default function Transaction() {
           user_id: user?.id,
           total_amount: total,
           payment_status: 'completed',
-          payment_method: paymentMethod
+          payment_method: paymentMethod,
+          discount_amount: discountAmount,
+          discount_percent: discountType === 'percent' ? Number(discountValue) : 0,
+          discount_type: discountType
         })
         .select()
         .single();
@@ -166,10 +186,20 @@ export default function Transaction() {
 
       if (itemsError) throw itemsError;
 
+      // Send email notification
+      sendEmailNotification('transaction', {
+        total,
+        paymentMethod,
+        discount: discountAmount,
+        itemCount: cart.length
+      });
+
       toast.success(`Transaksi berhasil! Total: ${formatCurrency(total)} (${paymentMethod.toUpperCase()})`);
       setCart([]);
       setPaymentMethod('cash');
       setCashReceived('');
+      setDiscountType('none');
+      setDiscountValue('');
       setCheckoutModalOpen(false);
       fetchData(); // Refresh stock
     } catch (error: any) {
@@ -382,8 +412,22 @@ export default function Transaction() {
                   ))}
                 </div>
 
-                <div className="border-t pt-4 space-y-4">
-                  <div className="flex justify-between items-center">
+                <div className="border-t pt-4 space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-medium">
+                      {formatCurrency(subtotal)}
+                    </span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between items-center text-sm text-green-600">
+                      <span>Diskon {discountType === 'percent' ? `(${discountValue}%)` : ''}</span>
+                      <span className="font-medium">
+                        -{formatCurrency(discountAmount)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-2 border-t">
                     <span className="font-medium">Total</span>
                     <span className="text-xl font-bold text-primary">
                       {formatCurrency(total)}
@@ -450,10 +494,58 @@ export default function Transaction() {
           </DialogHeader>
           <div className="space-y-6 mt-4">
             {/* Order Summary */}
-            <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
-              <div className="text-sm text-muted-foreground">Total Belanja</div>
-              <div className="text-3xl font-bold text-primary">{formatCurrency(total)}</div>
-              <div className="text-sm text-muted-foreground">{cart.length} item</div>
+            <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal ({cart.length} item)</span>
+                <span>{formatCurrency(subtotal)}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Diskon {discountType === 'percent' ? `(${discountValue}%)` : 'Member'}</span>
+                  <span>-{formatCurrency(discountAmount)}</span>
+                </div>
+              )}
+              <div className="border-t pt-2">
+                <div className="text-sm text-muted-foreground">Total Bayar</div>
+                <div className="text-3xl font-bold text-primary">{formatCurrency(total)}</div>
+              </div>
+            </div>
+
+            {/* Discount Section */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Diskon Member</Label>
+              <div className="flex gap-2">
+                <Select 
+                  value={discountType} 
+                  onValueChange={(value) => {
+                    setDiscountType(value as 'none' | 'percent' | 'fixed');
+                    setDiscountValue('');
+                  }}
+                >
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Tipe Diskon" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Tanpa Diskon</SelectItem>
+                    <SelectItem value="percent">Persen (%)</SelectItem>
+                    <SelectItem value="fixed">Nominal (Rp)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {discountType !== 'none' && (
+                  <Input
+                    type="number"
+                    placeholder={discountType === 'percent' ? 'Contoh: 10' : 'Contoh: 5000'}
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                    className="flex-1"
+                  />
+                )}
+              </div>
+              {discountType === 'percent' && discountValue && (
+                <p className="text-sm text-muted-foreground">
+                  Potongan: {formatCurrency(discountAmount)}
+                </p>
+              )}
             </div>
 
             {/* Payment Method Selection */}
