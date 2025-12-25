@@ -283,6 +283,8 @@ export type Database = {
           commission_amount: number | null
           commission_rate: number | null
           created_at: string
+          discount_amount: number
+          discount_percent: number | null
           id: string
           item_id: string | null
           item_name: string
@@ -297,6 +299,8 @@ export type Database = {
           commission_amount?: number | null
           commission_rate?: number | null
           created_at?: string
+          discount_amount?: number
+          discount_percent?: number | null
           id?: string
           item_id?: string | null
           item_name: string
@@ -311,6 +315,8 @@ export type Database = {
           commission_amount?: number | null
           commission_rate?: number | null
           created_at?: string
+          discount_amount?: number
+          discount_percent?: number | null
           id?: string
           item_id?: string | null
           item_name?: string
@@ -347,6 +353,9 @@ export type Database = {
       transactions: {
         Row: {
           created_at: string
+          discount_amount: number
+          discount_percent: number | null
+          discount_type: string | null
           id: string
           notes: string | null
           payment_method: string
@@ -356,6 +365,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          discount_amount?: number
+          discount_percent?: number | null
+          discount_type?: string | null
           id?: string
           notes?: string | null
           payment_method?: string
@@ -365,6 +377,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          discount_amount?: number
+          discount_percent?: number | null
+          discount_type?: string | null
           id?: string
           notes?: string | null
           payment_method?: string
