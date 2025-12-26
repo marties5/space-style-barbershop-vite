@@ -310,10 +310,10 @@ export function SalarySlipPDF({ barbers }: SalarySlipPDFProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        {/* <Button variant="outline">
           <FileText className="h-4 w-4 mr-2" />
           Slip Gaji
-        </Button>
+        </Button> */}
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>

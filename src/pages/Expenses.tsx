@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Receipt } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { CurrencyInput } from "@/components/ui/currency-input";
 
 const CATEGORIES = [
   { value: "operasional", label: "Operasional" },
@@ -46,7 +47,7 @@ export default function Expenses() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState<number>(0);
   const [category, setCategory] = useState("operasional");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [notes, setNotes] = useState("");
@@ -110,10 +111,10 @@ export default function Expenses() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!description.trim() || !amount) {
-      toast.error("Deskripsi dan jumlah wajib diisi");
-      return;
-    }
+  if (!description.trim() || amount <= 0) {
+    toast.error("Deskripsi dan jumlah wajib diisi");
+    return;
+  }
     createMutation.mutate();
   };
 
@@ -124,7 +125,9 @@ export default function Expenses() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Pencatatan Pengeluaran</h1>
-          <p className="text-muted-foreground">Kelola pengeluaran operasional</p>
+          <p className="text-muted-foreground">
+            Kelola pengeluaran operasional
+          </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -149,12 +152,12 @@ export default function Expenses() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="amount">Jumlah (Rp)</Label>
-                <Input
+                <CurrencyInput
                   id="amount"
-                  type="number"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="50000"
+                  onChange={setAmount}
+                  placeholder="50.000"
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -193,7 +196,11 @@ export default function Expenses() {
                   placeholder="Catatan tambahan..."
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={createMutation.isPending}
+              >
                 {createMutation.isPending ? "Menyimpan..." : "Simpan"}
               </Button>
             </form>
@@ -233,7 +240,10 @@ export default function Expenses() {
               </TableRow>
             ) : expenses?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="text-center py-8 text-muted-foreground"
+                >
                   Belum ada pengeluaran tercatat
                 </TableCell>
               </TableRow>
@@ -241,23 +251,34 @@ export default function Expenses() {
               expenses?.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell>
-                    {format(new Date(expense.created_at), "dd MMM yyyy HH:mm", { locale: id })}
+                    {format(new Date(expense.created_at), "dd MMM yyyy HH:mm", {
+                      locale: id,
+                    })}
                   </TableCell>
-                  <TableCell className="font-medium">{expense.description}</TableCell>
-                  <TableCell>
-                    {CATEGORIES.find((c) => c.value === expense.category)?.label || expense.category}
+                  <TableCell className="font-medium">
+                    {expense.description}
                   </TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      expense.payment_method === 'cash' 
-                        ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-                        : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                    }`}>
-                      {expense.payment_method === 'cash' ? 'Cash' : 'Transfer'}
+                    {CATEGORIES.find((c) => c.value === expense.category)
+                      ?.label || expense.category}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        expense.payment_method === "cash"
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                          : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                      }`}
+                    >
+                      {expense.payment_method === "cash" ? "Cash" : "Transfer"}
                     </span>
                   </TableCell>
-                  <TableCell>Rp {Number(expense.amount).toLocaleString("id-ID")}</TableCell>
-                  <TableCell className="text-muted-foreground">{expense.notes || "-"}</TableCell>
+                  <TableCell>
+                    Rp {Number(expense.amount).toLocaleString("id-ID")}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {expense.notes || "-"}
+                  </TableCell>
                   {isOwner && (
                     <TableCell>
                       <Button

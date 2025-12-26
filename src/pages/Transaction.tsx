@@ -1,17 +1,31 @@
-import { sendEmailNotification } from '@/hooks/useEmailSettings';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { cn } from '@/lib/utils';
-import { Banknote, CreditCard, Minus, Package, Plus, Scissors, ShoppingCart, Smartphone, Trash2, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useAuth } from "@/hooks/useAuth";
+import { sendEmailNotification } from "@/hooks/useEmailSettings";
+import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+import {
+  Banknote,
+  CreditCard,
+  Minus,
+  Package,
+  Plus,
+  Scissors,
+  ShoppingCart,
+  Trash2,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Item {
   id: string;
@@ -44,11 +58,15 @@ export default function Transaction() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [barberModalOpen, setBarberModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris' | 'transfer'>('cash');
-  const [cashReceived, setCashReceived] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<
+    "cash" | "qris" | "transfer"
+  >("cash");
+  const [cashReceived, setCashReceived] = useState<string>("");
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
-  const [discountType, setDiscountType] = useState<'none' | 'percent' | 'fixed'>('none');
-  const [discountValue, setDiscountValue] = useState<string>('');
+  const [discountType, setDiscountType] = useState<
+    "none" | "percent" | "fixed"
+  >("none");
+  const [discountValue, setDiscountValue] = useState<string>("");
 
   useEffect(() => {
     fetchData();
@@ -56,19 +74,19 @@ export default function Transaction() {
 
   const fetchData = async () => {
     const [itemsRes, barbersRes] = await Promise.all([
-      supabase.from('items').select('*').eq('is_active', true),
-      supabase.from('barbers').select('*').eq('is_active', true)
+      supabase.from("items").select("*").eq("is_active", true),
+      supabase.from("barbers").select("*").eq("is_active", true),
     ]);
-    
+
     if (itemsRes.data) setItems(itemsRes.data);
     if (barbersRes.data) setBarbers(barbersRes.data);
   };
 
-  const services = items.filter(i => i.type === 'service');
-  const products = items.filter(i => i.type === 'product');
+  const services = items.filter((i) => i.type === "service");
+  const products = items.filter((i) => i.type === "product");
 
   const handleItemClick = (item: Item) => {
-    if (item.type === 'service') {
+    if (item.type === "service") {
       setSelectedItem(item);
       setBarberModalOpen(true);
     } else {
@@ -86,24 +104,24 @@ export default function Transaction() {
   };
 
   const addToCart = (item: Item, barber?: Barber) => {
-    setCart(prev => {
+    setCart((prev) => {
       const existingIndex = prev.findIndex(
-        c => c.item.id === item.id && c.barber?.id === barber?.id
+        (c) => c.item.id === item.id && c.barber?.id === barber?.id
       );
-      
+
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex].quantity++;
         return updated;
       }
-      
+
       return [...prev, { item, barber, quantity: 1 }];
     });
     toast.success(`${item.name} ditambahkan`);
   };
 
   const updateQuantity = (index: number, delta: number) => {
-    setCart(prev => {
+    setCart((prev) => {
       const updated = [...prev];
       updated[index].quantity += delta;
       if (updated[index].quantity <= 0) {
@@ -114,27 +132,27 @@ export default function Transaction() {
   };
 
   const removeFromCart = (index: number) => {
-    setCart(prev => prev.filter((_, i) => i !== index));
+    setCart((prev) => prev.filter((_, i) => i !== index));
   };
 
   const subtotal = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
-  
+
   // Calculate discount
   const calculateDiscount = () => {
-    if (discountType === 'none' || !discountValue) return 0;
+    if (discountType === "none" || !discountValue) return 0;
     const value = Number(discountValue);
-    if (discountType === 'percent') {
+    if (discountType === "percent") {
       return Math.min((subtotal * value) / 100, subtotal);
     }
     return Math.min(value, subtotal);
   };
-  
+
   const discountAmount = calculateDiscount();
   const total = subtotal - discountAmount;
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      toast.error('Keranjang kosong');
+      toast.error("Keranjang kosong");
       return;
     }
 
@@ -143,15 +161,16 @@ export default function Transaction() {
     try {
       // Create transaction
       const { data: transaction, error: txError } = await supabase
-        .from('transactions')
+        .from("transactions")
         .insert({
           user_id: user?.id,
           total_amount: total,
-          payment_status: 'completed',
+          payment_status: "completed",
           payment_method: paymentMethod,
           discount_amount: discountAmount,
-          discount_percent: discountType === 'percent' ? Number(discountValue) : 0,
-          discount_type: discountType
+          discount_percent:
+            discountType === "percent" ? Number(discountValue) : 0,
+          discount_type: discountType,
         })
         .select()
         .single();
@@ -159,10 +178,11 @@ export default function Transaction() {
       if (txError) throw txError;
 
       // Create transaction items
-      const transactionItems = cart.map(c => {
-        const commissionRate = c.item.type === 'service' 
-          ? c.barber?.commission_service || 0 
-          : c.barber?.commission_product || 0;
+      const transactionItems = cart.map((c) => {
+        const commissionRate =
+          c.item.type === "service"
+            ? c.barber?.commission_service || 0
+            : c.barber?.commission_product || 0;
         const subtotal = c.item.price * c.quantity;
         const commissionAmount = (subtotal * commissionRate) / 100;
 
@@ -176,44 +196,48 @@ export default function Transaction() {
           unit_price: c.item.price,
           subtotal,
           commission_rate: commissionRate,
-          commission_amount: commissionAmount
+          commission_amount: commissionAmount,
         };
       });
 
       const { error: itemsError } = await supabase
-        .from('transaction_items')
+        .from("transaction_items")
         .insert(transactionItems);
 
       if (itemsError) throw itemsError;
 
       // Send email notification
-      sendEmailNotification('transaction', {
+      sendEmailNotification("transaction", {
         total,
         paymentMethod,
         discount: discountAmount,
-        itemCount: cart.length
+        itemCount: cart.length,
       });
 
-      toast.success(`Transaksi berhasil! Total: ${formatCurrency(total)} (${paymentMethod.toUpperCase()})`);
+      toast.success(
+        `Transaksi berhasil! Total: ${formatCurrency(
+          total
+        )} (${paymentMethod.toUpperCase()})`
+      );
       setCart([]);
-      setPaymentMethod('cash');
-      setCashReceived('');
-      setDiscountType('none');
-      setDiscountValue('');
+      setPaymentMethod("cash");
+      setCashReceived("");
+      setDiscountType("none");
+      setDiscountValue("");
       setCheckoutModalOpen(false);
       fetchData(); // Refresh stock
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menyimpan transaksi');
+      toast.error(error.message || "Gagal menyimpan transaksi");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -221,7 +245,9 @@ export default function Transaction() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">Transaksi Baru</h1>
-        <p className="text-muted-foreground">Pilih layanan atau produk untuk ditambahkan</p>
+        <p className="text-muted-foreground">
+          Pilih layanan atau produk untuk ditambahkan
+        </p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -235,19 +261,21 @@ export default function Transaction() {
               </div>
               <div>
                 <h2 className="font-semibold text-lg">Layanan</h2>
-                <p className="text-sm text-muted-foreground">{services.length} layanan tersedia</p>
+                <p className="text-sm text-muted-foreground">
+                  {services.length} layanan tersedia
+                </p>
               </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-4">
-              {services.map(item => (
-                <Card 
+            <div className="grid grid-cols-2 md:grid-cols-5  gap-4">
+              {services.map((item) => (
+                <Card
                   key={item.id}
                   className="overflow-hidden hover:shadow-lg transition-all hover:scale-[1.02]"
                 >
                   <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
                     {item.image_url ? (
-                      <img 
-                        src={item.image_url} 
+                      <img
+                        src={item.image_url}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
@@ -262,7 +290,7 @@ export default function Transaction() {
                         {formatCurrency(item.price)}
                       </p>
                     </div>
-                    <Button 
+                    <Button
                       className="w-full"
                       onClick={() => handleItemClick(item)}
                     >
@@ -288,12 +316,14 @@ export default function Transaction() {
               </div>
               <div>
                 <h2 className="font-semibold text-lg">Produk</h2>
-                <p className="text-sm text-muted-foreground">{products.length} produk tersedia</p>
+                <p className="text-sm text-muted-foreground">
+                  {products.length} produk tersedia
+                </p>
               </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-4">
-              {products.map(item => (
-                <Card 
+            <div className="grid grid-cols-2 md:grid-cols-5 Analisis performa bisnis gap-4">
+              {products.map((item) => (
+                <Card
                   key={item.id}
                   className={cn(
                     "overflow-hidden hover:shadow-lg transition-all hover:scale-[1.02]",
@@ -302,22 +332,24 @@ export default function Transaction() {
                 >
                   <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden relative">
                     {item.image_url ? (
-                      <img 
-                        src={item.image_url} 
+                      <img
+                        src={item.image_url}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <Package className="h-12 w-12 text-accent-foreground/30" />
                     )}
-                    <span className={cn(
-                      "absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-full",
-                      (item.stock || 0) > 5 
-                        ? "bg-green-500 text-white" 
-                        : (item.stock || 0) > 0 
+                    <span
+                      className={cn(
+                        "absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-full",
+                        (item.stock || 0) > 5
+                          ? "bg-green-500 text-white"
+                          : (item.stock || 0) > 0
                           ? "bg-orange-500 text-white"
                           : "bg-destructive text-destructive-foreground"
-                    )}>
+                      )}
+                    >
                       Stok: {item.stock || 0}
                     </span>
                   </div>
@@ -328,13 +360,13 @@ export default function Transaction() {
                         {formatCurrency(item.price)}
                       </p>
                     </div>
-                    <Button 
+                    <Button
                       className="w-full"
                       disabled={(item.stock || 0) <= 0}
                       onClick={() => handleItemClick(item)}
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      {(item.stock || 0) <= 0 ? 'Habis' : 'Pilih'}
+                      {(item.stock || 0) <= 0 ? "Habis" : "Pilih"}
                     </Button>
                   </CardContent>
                 </Card>
@@ -365,10 +397,15 @@ export default function Transaction() {
               <>
                 <div className="space-y-4 max-h-[400px] overflow-y-auto">
                   {cart.map((c, index) => (
-                    <div key={index} className="p-4 bg-muted/50 rounded-xl border border-border space-y-4">
+                    <div
+                      key={index}
+                      className="p-4 bg-muted/50 rounded-xl border border-border space-y-4"
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <p className="text-base font-semibold truncate">{c.item.name}</p>
+                          <p className="text-base font-semibold truncate">
+                            {c.item.name}
+                          </p>
                           {c.barber && (
                             <p className="text-sm text-muted-foreground mt-1">
                               Barber: {c.barber.name}
@@ -394,7 +431,9 @@ export default function Transaction() {
                           >
                             <Minus className="h-5 w-5" />
                           </Button>
-                          <span className="w-14 text-center font-bold text-lg">{c.quantity}</span>
+                          <span className="w-14 text-center font-bold text-lg">
+                            {c.quantity}
+                          </span>
                           <Button
                             size="icon"
                             variant="ghost"
@@ -419,8 +458,8 @@ export default function Transaction() {
                       {formatCurrency(total)}
                     </span>
                   </div>
-                  <Button 
-                    className="w-full" 
+                  <Button
+                    className="w-full"
                     size="lg"
                     onClick={() => setCheckoutModalOpen(true)}
                   >
@@ -440,7 +479,7 @@ export default function Transaction() {
             <DialogTitle>Pilih Barber untuk {selectedItem?.name}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 mt-4">
-            {barbers.map(barber => (
+            {barbers.map((barber) => (
               <Card
                 key={barber.id}
                 className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.02] hover:ring-2 hover:ring-primary"
@@ -449,8 +488,8 @@ export default function Transaction() {
                 <CardContent className="p-4 text-center">
                   <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center overflow-hidden mb-3">
                     {barber.photo_url ? (
-                      <img 
-                        src={barber.photo_url} 
+                      <img
+                        src={barber.photo_url}
                         alt={barber.name}
                         className="w-full h-full object-cover"
                       />
@@ -482,12 +521,16 @@ export default function Transaction() {
             {/* Order Summary */}
             <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal ({cart.length} item)</span>
+                <span className="text-muted-foreground">
+                  Subtotal ({cart.length} item)
+                </span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="border-t pt-2">
                 <div className="text-sm text-muted-foreground">Total Bayar</div>
-                <div className="text-3xl font-bold text-primary">{formatCurrency(total)}</div>
+                <div className="text-3xl font-bold text-primary">
+                  {formatCurrency(total)}
+                </div>
               </div>
             </div>
 
@@ -497,13 +540,17 @@ export default function Transaction() {
               <RadioGroup
                 value={paymentMethod}
                 onValueChange={(value) => {
-                  setPaymentMethod(value as 'cash' | 'qris' | 'transfer');
-                  setCashReceived('');
+                  setPaymentMethod(value as "cash" | "qris" | "transfer");
+                  setCashReceived("");
                 }}
                 className="grid grid-cols-3 gap-3"
               >
                 <div>
-                  <RadioGroupItem value="cash" id="modal-cash" className="peer sr-only" />
+                  <RadioGroupItem
+                    value="cash"
+                    id="modal-cash"
+                    className="peer sr-only"
+                  />
                   <Label
                     htmlFor="modal-cash"
                     className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
@@ -513,17 +560,29 @@ export default function Transaction() {
                   </Label>
                 </div>
                 <div>
-                  <RadioGroupItem value="qris" id="modal-qris" className="peer sr-only" />
+                  <RadioGroupItem
+                    value="qris"
+                    id="modal-qris"
+                    className="peer sr-only"
+                  />
                   <Label
                     htmlFor="modal-qris"
-                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
+                    className="flex flex-col h-20 items-center justify-center rounded-lg border-2 border-muted  py-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
                   >
-                    <Smartphone className="h-6 w-6 mb-2" />
-                    <span className="text-sm font-medium">QRIS</span>
+                    <img
+                      src={"/qris.png"}
+                      alt={"QRIS"}
+                      className="w-12 h-full object-contain"
+                    />
+                    QRIS
                   </Label>
                 </div>
                 <div>
-                  <RadioGroupItem value="transfer" id="modal-transfer" className="peer sr-only" />
+                  <RadioGroupItem
+                    value="transfer"
+                    id="modal-transfer"
+                    className="peer sr-only"
+                  />
                   <Label
                     htmlFor="modal-transfer"
                     className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-colors"
@@ -536,7 +595,7 @@ export default function Transaction() {
             </div>
 
             {/* Cash Payment - Amount Received & Change */}
-            {paymentMethod === 'cash' && (
+            {paymentMethod === "cash" && (
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
                 {/* Quick Amount Buttons */}
                 <div className="space-y-2">
@@ -546,7 +605,11 @@ export default function Transaction() {
                       <Button
                         key={amount}
                         type="button"
-                        variant={Number(cashReceived) === amount ? "default" : "outline"}
+                        variant={
+                          Number(cashReceived) === amount
+                            ? "default"
+                            : "outline"
+                        }
                         className="h-12 text-sm font-semibold"
                         onClick={() => setCashReceived(amount.toString())}
                       >
@@ -558,7 +621,8 @@ export default function Transaction() {
                       variant="outline"
                       className={cn(
                         "h-12 text-sm font-semibold",
-                        Number(cashReceived) === total && "border-primary bg-primary/10"
+                        Number(cashReceived) === total &&
+                          "border-primary bg-primary/10"
                       )}
                       onClick={() => setCashReceived(total.toString())}
                     >
@@ -569,7 +633,12 @@ export default function Transaction() {
 
                 {/* Free Text Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="modal-cash-received" className="text-sm font-medium">Atau Masukkan Manual</Label>
+                  <Label
+                    htmlFor="modal-cash-received"
+                    className="text-sm font-medium"
+                  >
+                    Atau Masukkan Manual
+                  </Label>
                   <Input
                     id="modal-cash-received"
                     type="number"
@@ -582,17 +651,27 @@ export default function Transaction() {
 
                 {/* Change Display */}
                 {cashReceived && Number(cashReceived) > 0 && (
-                  <div className={cn(
-                    "flex justify-between items-center p-4 rounded-lg",
-                    Number(cashReceived) >= total ? "bg-green-100 dark:bg-green-900/30" : "bg-destructive/10"
-                  )}>
+                  <div
+                    className={cn(
+                      "flex justify-between items-center p-4 rounded-lg",
+                      Number(cashReceived) >= total
+                        ? "bg-green-100 dark:bg-green-900/30"
+                        : "bg-destructive/10"
+                    )}
+                  >
                     <span className="font-medium">
-                      {Number(cashReceived) >= total ? 'Kembalian' : 'Kekurangan'}
+                      {Number(cashReceived) >= total
+                        ? "Kembalian"
+                        : "Kekurangan"}
                     </span>
-                    <span className={cn(
-                      "text-2xl font-bold",
-                      Number(cashReceived) >= total ? "text-green-600 dark:text-green-400" : "text-destructive"
-                    )}>
+                    <span
+                      className={cn(
+                        "text-2xl font-bold",
+                        Number(cashReceived) >= total
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-destructive"
+                      )}
+                    >
                       {formatCurrency(Math.abs(Number(cashReceived) - total))}
                     </span>
                   </div>
@@ -602,20 +681,23 @@ export default function Transaction() {
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex-1"
                 onClick={() => setCheckoutModalOpen(false)}
               >
                 Batal
               </Button>
-              <Button 
-                className="flex-1" 
+              <Button
+                className="flex-1"
                 size="lg"
                 onClick={handleCheckout}
-                disabled={isSubmitting || (paymentMethod === 'cash' && Number(cashReceived) < total)}
+                disabled={
+                  isSubmitting ||
+                  (paymentMethod === "cash" && Number(cashReceived) < total)
+                }
               >
-                {isSubmitting ? 'Memproses...' : 'Bayar Sekarang'}
+                {isSubmitting ? "Memproses..." : "Bayar Sekarang"}
               </Button>
             </div>
           </div>

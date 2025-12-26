@@ -33,8 +33,8 @@ export default function Barbers() {
   const [formData, setFormData] = useState({
     name: '',
     specialization: '',
-    commission_service: 40,
-    commission_product: 10
+    commission_service: 0,
+    commission_product: 0
   });
 
   useEffect(() => {
@@ -249,8 +249,8 @@ export default function Barbers() {
                 <TableHead>Foto</TableHead>
                 <TableHead>Nama</TableHead>
                 <TableHead>Spesialisasi</TableHead>
-                <TableHead>Komisi Jasa (%)</TableHead>
-                <TableHead>Komisi Produk (%)</TableHead>
+                {/* <TableHead>Komisi Jasa (%)</TableHead>
+                <TableHead>Komisi Produk (%)</TableHead> */}
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
@@ -269,8 +269,8 @@ export default function Barbers() {
                   </TableCell>
                   <TableCell className="font-medium">{barber.name}</TableCell>
                   <TableCell>{barber.specialization || '-'}</TableCell>
-                  <TableCell>{barber.commission_service}%</TableCell>
-                  <TableCell>{barber.commission_product}%</TableCell>
+                  {/* <TableCell>{barber.commission_service}%</TableCell>
+                  <TableCell>{barber.commission_product}%</TableCell> */}
                   <TableCell>
                     <button
                       onClick={() => toggleActive(barber)}
@@ -376,7 +376,7 @@ export default function Barbers() {
                 onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className=" grid-cols-2 gap-4 hidden">
               <div className="space-y-2">
                 <Label htmlFor="commission_service">Komisi Jasa (%)</Label>
                 <Input

@@ -31,19 +31,34 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/transaction", label: "Transaksi", icon: ShoppingCart },
-  { href: "/transaction-history", label: "History", icon: History },
-  { href: "/barbers", label: "Barber", icon: Users, ownerOnly: true },
-  { href: "/items", label: "Layanan & Produk", icon: Package, ownerOnly: true },
-  { href: "/expenses", label: "Pengeluaran", icon: Receipt },
-  { href: "/withdrawals", label: "Withdraw", icon: Wallet },
-  { href: "/cash-register", label: "Setoran Awal", icon: Banknote },
-  { href: "/reports", label: "Laporan", icon: BarChart3 },
-  { href: "/email-settings", label: "Email", icon: Mail, ownerOnly: true },
-  { href: "/profile", label: "Profil", icon: User },
-  { href: "/install", label: "Install App", icon: Download },
+const navSections = [
+  {
+    title: "Main Menu",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/transaction", label: "Transaksi", icon: ShoppingCart },
+      { href: "/barbers", label: "Barber", icon: Users, ownerOnly: true },
+      {
+        href: "/items",
+        label: "Layanan & Produk",
+        icon: Package,
+        ownerOnly: true,
+      },
+      { href: "/expenses", label: "Pengeluaran", icon: Receipt },
+      { href: "/withdrawals", label: "Withdraw", icon: Wallet },
+      { href: "/cash-register", label: "Deposit", icon: Banknote },
+      { href: "/reports", label: "Laporan", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "Pengaturan",
+    items: [
+      { href: "/profile", label: "Profile", icon: User },
+      { href: "/email-settings", label: "Email", icon: Mail, ownerOnly: true },
+      { href: "/transaction-history", label: "History", icon: History },
+      { href: "/install", label: "Install App", icon: Download },
+    ],
+  },
 ];
 
 export default function AppLayout({ children }: AppLayoutProps) {
@@ -54,14 +69,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  console.log("User:", user,isOwner);
   const handleSignOut = async () => {
     await signOut();
     navigate("/auth");
   };
 
-  const filteredNavItems = navItems.filter(
-    (item) => !item.ownerOnly || isOwner
+  const filteredNavItems = navSections.flatMap(section =>
+    section.items.filter(item => !item.ownerOnly || isOwner)
   );
 
   // Show loading while checking shop status
@@ -123,27 +137,42 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
-            {filteredNavItems.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 border px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                  {isActive && <ChevronRight className="h-4 w-4 ml-auto" />}
-                </Link>
-              );
-            })}
+          <nav className="flex-1 p-4 space-y-6">
+            {navSections.map((section) => (
+              <div key={section.title}>
+                <p className="px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase">
+                  {section.title}
+                </p>
+
+                <div className="space-y-1">
+                  {section.items
+                    .filter((item) => !item.ownerOnly || isOwner)
+                    .map((item) => {
+                      const isActive = location.pathname === item.href;
+
+                      return (
+                        <Link
+                          key={item.href}
+                          to={item.href}
+                          onClick={() => setSidebarOpen(false)}
+                          className={cn(
+                            "flex items-center gap-3 border px-4 py-3 rounded-lg text-sm font-medium transition-all",
+                            isActive
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                          )}
+                        >
+                          <item.icon className="h-5 w-5" />
+                          {item.label}
+                          {isActive && (
+                            <ChevronRight className="h-4 w-4 ml-auto" />
+                          )}
+                        </Link>
+                      );
+                    })}
+                </div>
+              </div>
+            ))}
           </nav>
 
           {/* Shop Status & User Info & Logout */}

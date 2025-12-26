@@ -430,7 +430,7 @@ export default function Reports() {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Summary Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Pendapatan</CardTitle>
@@ -482,7 +482,7 @@ export default function Reports() {
                 </div>
               </CardContent>
             </Card>
-
+{/* 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Diskon</CardTitle>
@@ -491,7 +491,7 @@ export default function Reports() {
               <CardContent>
                 <div className="text-2xl font-bold text-orange-600">{formatCurrency(totalDiscount)}</div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
           {/* Barber Performance */}

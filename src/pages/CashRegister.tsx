@@ -194,12 +194,12 @@ export default function CashRegister() {
                         Kas (Cash)
                       </div>
                     </SelectItem>
-                    <SelectItem value="bank">
+                    {/* <SelectItem value="bank">
                       <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4" />
                         Bank
                       </div>
-                    </SelectItem>
+                    </SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>
@@ -220,28 +220,28 @@ export default function CashRegister() {
         </Dialog>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center gap-2">
             <Banknote className="h-5 w-5 text-primary" />
-            <span className="text-muted-foreground">Total Semua:</span>
+            <span className="text-muted-foreground">Total Semua Deposit:</span>
           </div>
           <span className="font-bold text-lg">{formatCurrency(totalDeposits)}</span>
         </div>
-        <div className="bg-card border rounded-lg p-4">
+        {/* <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center gap-2">
             <Wallet className="h-5 w-5 text-green-500" />
             <span className="text-muted-foreground">Kas (Cash):</span>
           </div>
           <span className="font-bold text-lg text-green-600">{formatCurrency(totalCash)}</span>
-        </div>
-        <div className="bg-card border rounded-lg p-4">
+        </div> */}
+        {/* <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center gap-2">
             <Building2 className="h-5 w-5 text-blue-500" />
             <span className="text-muted-foreground">Bank:</span>
           </div>
           <span className="font-bold text-lg text-blue-600">{formatCurrency(totalBank)}</span>
-        </div>
+        </div> */}
       </div>
 
       <Card>

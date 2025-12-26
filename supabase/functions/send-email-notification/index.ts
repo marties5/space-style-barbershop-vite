@@ -1,10 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 // Professional email base template
@@ -29,14 +30,14 @@ const getEmailBaseStyles = () => `
 `;
 
 const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
-  const timestamp = new Date().toLocaleString("id-ID", { 
+  const timestamp = new Date().toLocaleString("id-ID", {
     timeZone: "Asia/Jakarta",
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   const baseStyles = getEmailBaseStyles();
@@ -66,7 +67,9 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
                       </tr>
                       <tr>
                         <td style="padding: 12px 0; font-size: 14px; color: #71717a;">Dibuka oleh</td>
-                        <td style="padding: 12px 0; font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">${data.userName || "Staff"}</td>
+                        <td style="padding: 12px 0; font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">${
+                          data.userName || "Staff"
+                        }</td>
                       </tr>
                     </table>
                   </div>
@@ -105,7 +108,9 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
                       </tr>
                       <tr>
                         <td style="padding: 12px 0; font-size: 14px; color: #71717a;">Ditutup oleh</td>
-                        <td style="padding: 12px 0; font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">${data.userName || "Staff"}</td>
+                        <td style="padding: 12px 0; font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">${
+                          data.userName || "Staff"
+                        }</td>
                       </tr>
                     </table>
                   </div>
@@ -124,7 +129,9 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
       const total = Number(data.total || 0);
       const discount = Number(data.discount || 0);
       return {
-        subject: `Transaksi Rp ${total.toLocaleString("id-ID")} - Barbershop POS`,
+        subject: `Transaksi Rp ${total.toLocaleString(
+          "id-ID"
+        )} - Barbershop POS`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -140,7 +147,9 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
                 <div class="email-body">
                   <div style="text-align: center; margin-bottom: 24px;">
                     <p style="margin: 0; font-size: 14px; color: #71717a;">Total Pembayaran</p>
-                    <p style="margin: 8px 0 0; font-size: 32px; font-weight: 700; color: #18181b;">Rp ${total.toLocaleString("id-ID")}</p>
+                    <p style="margin: 8px 0 0; font-size: 32px; font-weight: 700; color: #18181b;">Rp ${total.toLocaleString(
+                      "id-ID"
+                    )}</p>
                   </div>
                   <div class="info-card">
                     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
@@ -151,21 +160,43 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
                       <tr>
                         <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">Metode Pembayaran</td>
                         <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">
-                          <span style="background-color: ${data.paymentMethod === "cash" ? "#dcfce7" : "#e0e7ff"}; color: ${data.paymentMethod === "cash" ? "#166534" : "#3730a3"}; padding: 4px 10px; border-radius: 12px; font-size: 12px;">
+                          <span style="background-color: ${
+                            data.paymentMethod === "cash"
+                              ? "#dcfce7"
+                              : "#e0e7ff"
+                          }; color: ${
+          data.paymentMethod === "cash" ? "#166534" : "#3730a3"
+        }; padding: 4px 10px; border-radius: 12px; font-size: 12px;">
                             ${data.paymentMethod === "cash" ? "Tunai" : "QRIS"}
                           </span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0; ${discount > 0 ? 'border-bottom: 1px solid #e4e4e7;' : ''} font-size: 14px; color: #71717a;">Jumlah Item</td>
-                        <td style="padding: 12px 0; ${discount > 0 ? 'border-bottom: 1px solid #e4e4e7;' : ''} font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">${data.itemCount || 0} item</td>
+                        <td style="padding: 12px 0; ${
+                          discount > 0
+                            ? "border-bottom: 1px solid #e4e4e7;"
+                            : ""
+                        } font-size: 14px; color: #71717a;">Jumlah Item</td>
+                        <td style="padding: 12px 0; ${
+                          discount > 0
+                            ? "border-bottom: 1px solid #e4e4e7;"
+                            : ""
+                        } font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">${
+          data.itemCount || 0
+        } item</td>
                       </tr>
-                      ${discount > 0 ? `
+                      ${
+                        discount > 0
+                          ? `
                       <tr>
                         <td style="padding: 12px 0; font-size: 14px; color: #71717a;">Diskon</td>
-                        <td style="padding: 12px 0; font-size: 14px; font-weight: 500; color: #dc2626; text-align: right;">-Rp ${discount.toLocaleString("id-ID")}</td>
+                        <td style="padding: 12px 0; font-size: 14px; font-weight: 500; color: #dc2626; text-align: right;">-Rp ${discount.toLocaleString(
+                          "id-ID"
+                        )}</td>
                       </tr>
-                      ` : ''}
+                      `
+                          : ""
+                      }
                     </table>
                   </div>
                 </div>
@@ -182,7 +213,9 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
     case "withdrawal":
       const amount = Number(data.amount || 0);
       return {
-        subject: `Penarikan Rp ${amount.toLocaleString("id-ID")} - ${data.barberName || "Barber"}`,
+        subject: `Penarikan Rp ${amount.toLocaleString("id-ID")} - ${
+          data.barberName || "Barber"
+        }`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -198,32 +231,54 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
                 <div class="email-body">
                   <div style="text-align: center; margin-bottom: 24px;">
                     <p style="margin: 0; font-size: 14px; color: #71717a;">Jumlah Penarikan</p>
-                    <p style="margin: 8px 0 0; font-size: 32px; font-weight: 700; color: #18181b;">Rp ${amount.toLocaleString("id-ID")}</p>
+                    <p style="margin: 8px 0 0; font-size: 32px; font-weight: 700; color: #18181b;">Rp ${amount.toLocaleString(
+                      "id-ID"
+                    )}</p>
                   </div>
                   <div class="info-card">
                     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                       <tr>
                         <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">Barber</td>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #18181b; text-align: right;">${data.barberName || "Unknown"}</td>
+                        <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #18181b; text-align: right;">${
+                          data.barberName || "Unknown"
+                        }</td>
                       </tr>
                       <tr>
                         <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">Waktu</td>
                         <td style="padding: 12px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">${timestamp}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0; ${data.notes ? 'border-bottom: 1px solid #e4e4e7;' : ''} font-size: 14px; color: #71717a;">Metode</td>
-                        <td style="padding: 12px 0; ${data.notes ? 'border-bottom: 1px solid #e4e4e7;' : ''} font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">
-                          <span style="background-color: ${data.paymentMethod === "cash" ? "#dcfce7" : "#e0e7ff"}; color: ${data.paymentMethod === "cash" ? "#166534" : "#3730a3"}; padding: 4px 10px; border-radius: 12px; font-size: 12px;">
-                            ${data.paymentMethod === "cash" ? "Tunai" : "Transfer"}
+                        <td style="padding: 12px 0; ${
+                          data.notes ? "border-bottom: 1px solid #e4e4e7;" : ""
+                        } font-size: 14px; color: #71717a;">Metode</td>
+                        <td style="padding: 12px 0; ${
+                          data.notes ? "border-bottom: 1px solid #e4e4e7;" : ""
+                        } font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">
+                          <span style="background-color: ${
+                            data.paymentMethod === "cash"
+                              ? "#dcfce7"
+                              : "#e0e7ff"
+                          }; color: ${
+          data.paymentMethod === "cash" ? "#166534" : "#3730a3"
+        }; padding: 4px 10px; border-radius: 12px; font-size: 12px;">
+                            ${
+                              data.paymentMethod === "cash"
+                                ? "Tunai"
+                                : "Transfer"
+                            }
                           </span>
                         </td>
                       </tr>
-                      ${data.notes ? `
+                      ${
+                        data.notes
+                          ? `
                       <tr>
                         <td style="padding: 12px 0; font-size: 14px; color: #71717a;">Catatan</td>
                         <td style="padding: 12px 0; font-size: 14px; font-weight: 500; color: #18181b; text-align: right;">${data.notes}</td>
                       </tr>
-                      ` : ''}
+                      `
+                          : ""
+                      }
                     </table>
                   </div>
                 </div>
@@ -260,35 +315,66 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
         }>;
       };
 
-      const formatCurrency = (amount: number) => `Rp ${amount.toLocaleString("id-ID")}`;
-      
-      const barberRows = (reportData.barberPerformance || []).map(barber => `
-        <tr>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #18181b;">${barber.name}</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #71717a; text-align: center;">${barber.transactionCount}</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #18181b; text-align: right;">${formatCurrency(barber.totalRevenue)}</td>
-          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #166534; text-align: right;">${formatCurrency(barber.commission)}</td>
-        </tr>
-      `).join('');
+      const formatCurrency = (amount: number) =>
+        `Rp ${amount.toLocaleString("id-ID")}`;
 
-      const withdrawalRows = (reportData.barberWithdrawals || []).length > 0 
-        ? (reportData.barberWithdrawals || []).map(w => `
+      const barberRows = (reportData.barberPerformance || [])
+        .map(
+          (barber) => `
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #18181b;">${
+            barber.name
+          }</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #71717a; text-align: center;">${
+            barber.transactionCount
+          }</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #18181b; text-align: right;">${formatCurrency(
+            barber.totalRevenue
+          )}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #166534; text-align: right;">${formatCurrency(
+            barber.commission
+          )}</td>
+        </tr>
+      `
+        )
+        .join("");
+
+      const withdrawalRows =
+        (reportData.barberWithdrawals || []).length > 0
+          ? (reportData.barberWithdrawals || [])
+              .map(
+                (w) => `
             <tr>
-              <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #18181b;">${w.barberName}</td>
-              <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #dc2626; text-align: right;">${formatCurrency(w.amount)}</td>
+              <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #18181b;">${
+                w.barberName
+              }</td>
+              <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #dc2626; text-align: right;">${formatCurrency(
+                w.amount
+              )}</td>
               <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; text-align: center;">
-                <span style="background-color: ${w.paymentMethod === "cash" ? "#dcfce7" : "#e0e7ff"}; color: ${w.paymentMethod === "cash" ? "#166534" : "#3730a3"}; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
+                <span style="background-color: ${
+                  w.paymentMethod === "cash" ? "#dcfce7" : "#e0e7ff"
+                }; color: ${
+                  w.paymentMethod === "cash" ? "#166534" : "#3730a3"
+                }; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
                   ${w.paymentMethod === "cash" ? "Tunai" : "Transfer"}
                 </span>
               </td>
             </tr>
-          `).join('')
-        : '<tr><td colspan="3" style="padding: 16px; text-align: center; color: #a1a1aa; font-size: 13px;">Tidak ada penarikan hari ini</td></tr>';
+          `
+              )
+              .join("")
+          : '<tr><td colspan="3" style="padding: 16px; text-align: center; color: #a1a1aa; font-size: 13px;">Tidak ada penarikan hari ini</td></tr>';
 
       const netRevenue = reportData.totalRevenue - reportData.totalExpenses;
 
       return {
-        subject: `📊 Laporan Harian - ${new Date().toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`,
+        subject: `📊 Laporan Harian - ${new Date().toLocaleDateString("id-ID", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -298,7 +384,15 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
               <div class="email-container" style="max-width: 600px;">
                 <div class="email-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 28px;">
                   <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.025em;">📊 Laporan Harian</h1>
-                  <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.85);">${new Date().toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.85);">${new Date().toLocaleDateString(
+                    "id-ID",
+                    {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    }
+                  )}</p>
                 </div>
                 
                 <div class="email-body" style="padding: 24px;">
@@ -309,13 +403,17 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
                         <td width="50%" style="padding-right: 6px;">
                           <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px; padding: 16px; text-align: center;">
                             <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px;">Total Pendapatan</p>
-                            <p style="margin: 6px 0 0; font-size: 22px; font-weight: 700; color: #ffffff;">${formatCurrency(reportData.totalRevenue)}</p>
+                            <p style="margin: 6px 0 0; font-size: 22px; font-weight: 700; color: #ffffff;">${formatCurrency(
+                              reportData.totalRevenue
+                            )}</p>
                           </div>
                         </td>
                         <td width="50%" style="padding-left: 6px;">
                           <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border-radius: 10px; padding: 16px; text-align: center;">
                             <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px;">Transaksi</p>
-                            <p style="margin: 6px 0 0; font-size: 22px; font-weight: 700; color: #ffffff;">${reportData.totalTransactions}</p>
+                            <p style="margin: 6px 0 0; font-size: 22px; font-weight: 700; color: #ffffff;">${
+                              reportData.totalTransactions
+                            }</p>
                           </div>
                         </td>
                       </tr>
@@ -328,19 +426,29 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
                     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                       <tr>
                         <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">Pendapatan Layanan</td>
-                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #18181b; text-align: right;">${formatCurrency(reportData.serviceRevenue)}</td>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #18181b; text-align: right;">${formatCurrency(
+                          reportData.serviceRevenue
+                        )}</td>
                       </tr>
                       <tr>
                         <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">Pendapatan Produk</td>
-                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #18181b; text-align: right;">${formatCurrency(reportData.productRevenue)}</td>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #18181b; text-align: right;">${formatCurrency(
+                          reportData.productRevenue
+                        )}</td>
                       </tr>
                       <tr>
                         <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">Total Pengeluaran</td>
-                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #dc2626; text-align: right;">-${formatCurrency(reportData.totalExpenses)}</td>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #dc2626; text-align: right;">-${formatCurrency(
+                          reportData.totalExpenses
+                        )}</td>
                       </tr>
                       <tr>
                         <td style="padding: 12px 0; font-size: 15px; font-weight: 600; color: #18181b;">Pendapatan Bersih</td>
-                        <td style="padding: 12px 0; font-size: 18px; font-weight: 700; color: ${netRevenue >= 0 ? '#166534' : '#dc2626'}; text-align: right;">${formatCurrency(netRevenue)}</td>
+                        <td style="padding: 12px 0; font-size: 18px; font-weight: 700; color: ${
+                          netRevenue >= 0 ? "#166534" : "#dc2626"
+                        }; text-align: right;">${formatCurrency(
+          netRevenue
+        )}</td>
                       </tr>
                     </table>
                   </div>
@@ -358,7 +466,10 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
                         </tr>
                       </thead>
                       <tbody>
-                        ${barberRows || '<tr><td colspan="4" style="padding: 16px; text-align: center; color: #a1a1aa; font-size: 13px;">Tidak ada data barber</td></tr>'}
+                        ${
+                          barberRows ||
+                          '<tr><td colspan="4" style="padding: 16px; text-align: center; color: #a1a1aa; font-size: 13px;">Tidak ada data barber</td></tr>'
+                        }
                       </tbody>
                     </table>
                   </div>
@@ -385,15 +496,21 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="font-size: 12px; color: #71717a;">Dibuka:</td>
-                        <td style="font-size: 12px; color: #18181b; text-align: right;">${reportData.openedAt || '-'}</td>
+                        <td style="font-size: 12px; color: #18181b; text-align: right;">${
+                          reportData.openedAt || "-"
+                        }</td>
                       </tr>
                       <tr>
                         <td style="font-size: 12px; color: #71717a; padding-top: 6px;">Ditutup:</td>
-                        <td style="font-size: 12px; color: #18181b; text-align: right; padding-top: 6px;">${reportData.closedAt || timestamp}</td>
+                        <td style="font-size: 12px; color: #18181b; text-align: right; padding-top: 6px;">${
+                          reportData.closedAt || timestamp
+                        }</td>
                       </tr>
                       <tr>
                         <td style="font-size: 12px; color: #71717a; padding-top: 6px;">Ditutup oleh:</td>
-                        <td style="font-size: 12px; color: #18181b; text-align: right; padding-top: 6px;">${reportData.userName || 'Staff'}</td>
+                        <td style="font-size: 12px; color: #18181b; text-align: right; padding-top: 6px;">${
+                          reportData.userName || "Staff"
+                        }</td>
                       </tr>
                     </table>
                   </div>
@@ -483,25 +600,25 @@ const logEmailToDatabase = async (
   emailType: string,
   recipientEmail: string,
   subject: string,
-  status: 'success' | 'failed',
+  status: "success" | "failed",
   errorMessage?: string
 ) => {
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { error } = await supabase.from('email_logs').insert({
+    const { error } = await supabase.from("email_logs").insert({
       email_type: emailType,
       recipient_email: recipientEmail,
       subject: subject,
       status: status,
       error_message: errorMessage || null,
-      sent_at: new Date().toISOString()
+      sent_at: new Date().toISOString(),
     });
-    
+
     if (error) {
-      console.error('Error logging email:', error);
+      console.error("Error logging email:", error);
     }
   } catch (err) {
-    console.error('Failed to log email:', err);
+    console.error("Failed to log email:", err);
   }
 };
 
@@ -531,7 +648,10 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error fetching email settings:", settingsError);
       return new Response(
         JSON.stringify({ error: "Email settings not found" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
       );
     }
 
@@ -540,7 +660,10 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("Email notifications are disabled");
       return new Response(
         JSON.stringify({ message: "Email notifications are disabled" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
       );
     }
 
@@ -559,7 +682,10 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`Notification type ${type} is disabled`);
       return new Response(
         JSON.stringify({ message: `${type} notifications are disabled` }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
       );
     }
 
@@ -569,7 +695,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Create SMTP client with proper TLS configuration
     // Port 465 uses direct SSL/TLS, Port 587 uses STARTTLS
     const useDirectTLS = settings.smtp_port === 465;
-    
+
     const client = new SMTPClient({
       connection: {
         hostname: settings.smtp_host,
@@ -596,7 +722,7 @@ const handler = async (req: Request): Promise<Response> => {
         });
         console.log(`Email sent to ${recipientEmail}`);
         results.push({ email: recipientEmail, success: true });
-        
+
         // Log successful email
         await logEmailToDatabase(
           supabaseUrl,
@@ -604,13 +730,21 @@ const handler = async (req: Request): Promise<Response> => {
           type,
           recipientEmail,
           template.subject,
-          'success'
+          "success"
         );
       } catch (emailError: unknown) {
-        const errorMessage = emailError instanceof Error ? emailError.message : String(emailError);
-        console.error(`Failed to send email to ${recipientEmail}:`, errorMessage);
-        results.push({ email: recipientEmail, success: false, error: errorMessage });
-        
+        const errorMessage =
+          emailError instanceof Error ? emailError.message : String(emailError);
+        console.error(
+          `Failed to send email to ${recipientEmail}:`,
+          errorMessage
+        );
+        results.push({
+          email: recipientEmail,
+          success: false,
+          error: errorMessage,
+        });
+
         // Log failed email
         await logEmailToDatabase(
           supabaseUrl,
@@ -618,7 +752,7 @@ const handler = async (req: Request): Promise<Response> => {
           type,
           recipientEmail,
           template.subject,
-          'failed',
+          "failed",
           errorMessage
         );
       }
@@ -628,17 +762,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email send results:", results);
 
-    return new Response(
-      JSON.stringify({ success: true, results }),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return new Response(JSON.stringify({ success: true, results }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("Error in send-email-notification:", errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 };
 
