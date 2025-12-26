@@ -238,7 +238,7 @@ export default function Transaction() {
                 <p className="text-sm text-muted-foreground">{services.length} layanan tersedia</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-4">
               {services.map(item => (
                 <Card 
                   key={item.id}
@@ -291,7 +291,7 @@ export default function Transaction() {
                 <p className="text-sm text-muted-foreground">{products.length} produk tersedia</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-4">
               {products.map(item => (
                 <Card 
                   key={item.id}
@@ -413,21 +413,7 @@ export default function Transaction() {
                 </div>
 
                 <div className="border-t pt-4 space-y-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-medium">
-                      {formatCurrency(subtotal)}
-                    </span>
-                  </div>
-                  {discountAmount > 0 && (
-                    <div className="flex justify-between items-center text-sm text-green-600">
-                      <span>Diskon {discountType === 'percent' ? `(${discountValue}%)` : ''}</span>
-                      <span className="font-medium">
-                        -{formatCurrency(discountAmount)}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between items-center pt-2 border-t">
+                  <div className="flex justify-between items-center">
                     <span className="font-medium">Total</span>
                     <span className="text-xl font-bold text-primary">
                       {formatCurrency(total)}
@@ -499,53 +485,10 @@ export default function Transaction() {
                 <span className="text-muted-foreground">Subtotal ({cart.length} item)</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
-              {discountAmount > 0 && (
-                <div className="flex justify-between text-sm text-green-600">
-                  <span>Diskon {discountType === 'percent' ? `(${discountValue}%)` : 'Member'}</span>
-                  <span>-{formatCurrency(discountAmount)}</span>
-                </div>
-              )}
               <div className="border-t pt-2">
                 <div className="text-sm text-muted-foreground">Total Bayar</div>
                 <div className="text-3xl font-bold text-primary">{formatCurrency(total)}</div>
               </div>
-            </div>
-
-            {/* Discount Section */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Diskon Member</Label>
-              <div className="flex gap-2">
-                <Select 
-                  value={discountType} 
-                  onValueChange={(value) => {
-                    setDiscountType(value as 'none' | 'percent' | 'fixed');
-                    setDiscountValue('');
-                  }}
-                >
-                  <SelectTrigger className="w-[130px]">
-                    <SelectValue placeholder="Tipe Diskon" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Tanpa Diskon</SelectItem>
-                    <SelectItem value="percent">Persen (%)</SelectItem>
-                    <SelectItem value="fixed">Nominal (Rp)</SelectItem>
-                  </SelectContent>
-                </Select>
-                {discountType !== 'none' && (
-                  <Input
-                    type="number"
-                    placeholder={discountType === 'percent' ? 'Contoh: 10' : 'Contoh: 5000'}
-                    value={discountValue}
-                    onChange={(e) => setDiscountValue(e.target.value)}
-                    className="flex-1"
-                  />
-                )}
-              </div>
-              {discountType === 'percent' && discountValue && (
-                <p className="text-sm text-muted-foreground">
-                  Potongan: {formatCurrency(discountAmount)}
-                </p>
-              )}
             </div>
 
             {/* Payment Method Selection */}

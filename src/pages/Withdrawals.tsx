@@ -31,6 +31,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Plus, Trash2, Wallet } from "lucide-react";
+import { SalarySlipPDF } from "@/components/withdrawals/SalarySlipPDF";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 
@@ -183,13 +184,15 @@ export default function Withdrawals() {
           <h1 className="text-2xl font-bold">Penarikan Barber</h1>
           <p className="text-muted-foreground">Kelola penarikan komisi/gaji barber</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Catat Penarikan
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <SalarySlipPDF barbers={barbers || []} />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Catat Penarikan
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Catat Penarikan Barber</DialogTitle>
@@ -248,31 +251,20 @@ export default function Withdrawals() {
           </DialogContent>
         </Dialog>
       </div>
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {barbers?.map((barber) => {
-          const totalCommission = pendingCommissions?.[barber.id]?.total || 0;
           const totalWithdrawn = withdrawalsByBarber[barber.id] || 0;
-          const remaining = totalCommission - totalWithdrawn;
           
           return (
             <div key={barber.id} className="bg-card border rounded-lg p-4 space-y-2">
               <div className="font-medium">{barber.name}</div>
-              <div className="text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total Komisi:</span>
-                  <span>Rp {totalCommission.toLocaleString("id-ID")}</span>
-                </div>
+              <div className="text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Sudah Ditarik:</span>
-                  <span className="text-destructive">Rp {totalWithdrawn.toLocaleString("id-ID")}</span>
-                </div>
-                <div className="flex justify-between font-medium">
-                  <span>Sisa:</span>
-                  <span className={remaining > 0 ? "text-green-600" : ""}>
-                    Rp {remaining.toLocaleString("id-ID")}
-                  </span>
+                  <span className="font-bold text-primary">Rp {totalWithdrawn.toLocaleString("id-ID")}</span>
                 </div>
               </div>
             </div>
