@@ -96,7 +96,7 @@ export function useEmailSettings() {
 }
 
 export async function sendEmailNotification(
-  type: 'shop_open' | 'shop_close' | 'transaction' | 'withdrawal',
+  type: 'shop_open' | 'shop_close' | 'transaction' | 'withdrawal' | 'daily_report',
   data: Record<string, unknown>
 ) {
   try {

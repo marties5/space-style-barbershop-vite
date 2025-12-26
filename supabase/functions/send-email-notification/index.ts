@@ -237,6 +237,178 @@ const getEmailTemplate = (type: string, data: Record<string, unknown>) => {
         `,
       };
 
+    case "daily_report":
+      const reportData = data as {
+        userName: string;
+        openedAt: string;
+        closedAt: string;
+        totalRevenue: number;
+        totalTransactions: number;
+        serviceRevenue: number;
+        productRevenue: number;
+        totalExpenses: number;
+        barberPerformance: Array<{
+          name: string;
+          transactionCount: number;
+          totalRevenue: number;
+          commission: number;
+        }>;
+        barberWithdrawals: Array<{
+          barberName: string;
+          amount: number;
+          paymentMethod: string;
+        }>;
+      };
+
+      const formatCurrency = (amount: number) => `Rp ${amount.toLocaleString("id-ID")}`;
+      
+      const barberRows = (reportData.barberPerformance || []).map(barber => `
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #18181b;">${barber.name}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #71717a; text-align: center;">${barber.transactionCount}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #18181b; text-align: right;">${formatCurrency(barber.totalRevenue)}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #166534; text-align: right;">${formatCurrency(barber.commission)}</td>
+        </tr>
+      `).join('');
+
+      const withdrawalRows = (reportData.barberWithdrawals || []).length > 0 
+        ? (reportData.barberWithdrawals || []).map(w => `
+            <tr>
+              <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #18181b;">${w.barberName}</td>
+              <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; color: #dc2626; text-align: right;">${formatCurrency(w.amount)}</td>
+              <td style="padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 13px; text-align: center;">
+                <span style="background-color: ${w.paymentMethod === "cash" ? "#dcfce7" : "#e0e7ff"}; color: ${w.paymentMethod === "cash" ? "#166534" : "#3730a3"}; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
+                  ${w.paymentMethod === "cash" ? "Tunai" : "Transfer"}
+                </span>
+              </td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="3" style="padding: 16px; text-align: center; color: #a1a1aa; font-size: 13px;">Tidak ada penarikan hari ini</td></tr>';
+
+      const netRevenue = reportData.totalRevenue - reportData.totalExpenses;
+
+      return {
+        subject: `📊 Laporan Harian - ${new Date().toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>${baseStyles}</style></head>
+          <body>
+            <div class="email-wrapper">
+              <div class="email-container" style="max-width: 600px;">
+                <div class="email-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 28px;">
+                  <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.025em;">📊 Laporan Harian</h1>
+                  <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.85);">${new Date().toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                </div>
+                
+                <div class="email-body" style="padding: 24px;">
+                  <!-- Summary Cards -->
+                  <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td width="50%" style="padding-right: 6px;">
+                          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px; padding: 16px; text-align: center;">
+                            <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px;">Total Pendapatan</p>
+                            <p style="margin: 6px 0 0; font-size: 22px; font-weight: 700; color: #ffffff;">${formatCurrency(reportData.totalRevenue)}</p>
+                          </div>
+                        </td>
+                        <td width="50%" style="padding-left: 6px;">
+                          <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border-radius: 10px; padding: 16px; text-align: center;">
+                            <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px;">Transaksi</p>
+                            <p style="margin: 6px 0 0; font-size: 22px; font-weight: 700; color: #ffffff;">${reportData.totalTransactions}</p>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <!-- Revenue Breakdown -->
+                  <div style="background-color: #fafafa; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #18181b;">💰 Rincian Pendapatan</h3>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                      <tr>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">Pendapatan Layanan</td>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #18181b; text-align: right;">${formatCurrency(reportData.serviceRevenue)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">Pendapatan Produk</td>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #18181b; text-align: right;">${formatCurrency(reportData.productRevenue)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; color: #71717a;">Total Pengeluaran</td>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #e4e4e7; font-size: 14px; font-weight: 600; color: #dc2626; text-align: right;">-${formatCurrency(reportData.totalExpenses)}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 12px 0; font-size: 15px; font-weight: 600; color: #18181b;">Pendapatan Bersih</td>
+                        <td style="padding: 12px 0; font-size: 18px; font-weight: 700; color: ${netRevenue >= 0 ? '#166534' : '#dc2626'}; text-align: right;">${formatCurrency(netRevenue)}</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <!-- Barber Performance -->
+                  <div style="background-color: #fafafa; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #18181b;">💈 Performa Barber</h3>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                      <thead>
+                        <tr style="background-color: #e4e4e7;">
+                          <th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: #52525b; text-align: left; border-radius: 6px 0 0 0;">Nama</th>
+                          <th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: #52525b; text-align: center;">Transaksi</th>
+                          <th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: #52525b; text-align: right;">Pendapatan</th>
+                          <th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: #52525b; text-align: right; border-radius: 0 6px 0 0;">Komisi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${barberRows || '<tr><td colspan="4" style="padding: 16px; text-align: center; color: #a1a1aa; font-size: 13px;">Tidak ada data barber</td></tr>'}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Barber Withdrawals -->
+                  <div style="background-color: #fef3c7; border-radius: 10px; padding: 16px;">
+                    <h3 style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #92400e;">💸 Penarikan Komisi</h3>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; background-color: #ffffff; border-radius: 8px;">
+                      <thead>
+                        <tr style="background-color: #fef9c3;">
+                          <th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: #78350f; text-align: left; border-radius: 8px 0 0 0;">Barber</th>
+                          <th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: #78350f; text-align: right;">Jumlah</th>
+                          <th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: #78350f; text-align: center; border-radius: 0 8px 0 0;">Metode</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${withdrawalRows}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Footer Info -->
+                  <div style="margin-top: 20px; padding: 16px; background-color: #f4f4f5; border-radius: 10px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="font-size: 12px; color: #71717a;">Dibuka:</td>
+                        <td style="font-size: 12px; color: #18181b; text-align: right;">${reportData.openedAt || '-'}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-size: 12px; color: #71717a; padding-top: 6px;">Ditutup:</td>
+                        <td style="font-size: 12px; color: #18181b; text-align: right; padding-top: 6px;">${reportData.closedAt || timestamp}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-size: 12px; color: #71717a; padding-top: 6px;">Ditutup oleh:</td>
+                        <td style="font-size: 12px; color: #18181b; text-align: right; padding-top: 6px;">${reportData.userName || 'Staff'}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+                
+                <div class="email-footer">
+                  <p class="footer-text">Laporan otomatis dari <span class="footer-brand">Barbershop POS</span></p>
+                </div>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      };
+
     case "test":
       return {
         subject: "Test Email - Barbershop POS",
@@ -378,6 +550,7 @@ const handler = async (req: Request): Promise<Response> => {
       shop_close: "notify_shop_close",
       transaction: "notify_transaction",
       withdrawal: "notify_withdrawal",
+      daily_report: "notify_shop_close", // Daily report is sent when shop closes
       test: "is_active", // Always send test if is_active is true
     };
 
