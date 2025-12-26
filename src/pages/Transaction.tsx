@@ -291,7 +291,7 @@ export default function Transaction() {
                 <p className="text-sm text-muted-foreground">{products.length} produk tersedia</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-4">
               {products.map(item => (
                 <Card 
                   key={item.id}
