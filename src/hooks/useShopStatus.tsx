@@ -113,11 +113,138 @@ export function ShopStatusProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getDailyReportData = async () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    // Get shop status for opened_at time
+    const { data: shopStatus } = await supabase
+      .from('shop_status')
+      .select('opened_at')
+      .limit(1)
+      .maybeSingle();
+
+    // Get today's transactions with items
+    const { data: transactions } = await supabase
+      .from('transactions')
+      .select(`
+        id,
+        total_amount,
+        payment_status,
+        created_at,
+        transaction_items (
+          item_type,
+          subtotal,
+          barber_id,
+          commission_amount
+        )
+      `)
+      .gte('created_at', todayISO)
+      .eq('payment_status', 'completed');
+
+    // Get today's expenses
+    const { data: expenses } = await supabase
+      .from('expenses')
+      .select('amount')
+      .gte('created_at', todayISO);
+
+    // Get today's withdrawals with barber info
+    const { data: withdrawals } = await supabase
+      .from('barber_withdrawals')
+      .select(`
+        amount,
+        payment_method,
+        barber_id,
+        barbers (name)
+      `)
+      .gte('created_at', todayISO);
+
+    // Get barbers for performance data
+    const { data: barbers } = await supabase
+      .from('barbers')
+      .select('id, name')
+      .eq('is_active', true);
+
+    // Calculate revenue breakdown
+    let serviceRevenue = 0;
+    let productRevenue = 0;
+    const totalRevenue = transactions?.reduce((sum, t) => sum + Number(t.total_amount), 0) || 0;
+    const totalTransactions = transactions?.length || 0;
+
+    // Calculate barber performance
+    const barberStats: Record<string, { transactionCount: number; totalRevenue: number; commission: number }> = {};
+    
+    transactions?.forEach(transaction => {
+      const items = transaction.transaction_items || [];
+      items.forEach((item: { item_type: string; subtotal: number; barber_id: string | null; commission_amount: number | null }) => {
+        if (item.item_type === 'service') {
+          serviceRevenue += Number(item.subtotal);
+        } else if (item.item_type === 'product') {
+          productRevenue += Number(item.subtotal);
+        }
+
+        if (item.barber_id) {
+          if (!barberStats[item.barber_id]) {
+            barberStats[item.barber_id] = { transactionCount: 0, totalRevenue: 0, commission: 0 };
+          }
+          barberStats[item.barber_id].transactionCount += 1;
+          barberStats[item.barber_id].totalRevenue += Number(item.subtotal);
+          barberStats[item.barber_id].commission += Number(item.commission_amount || 0);
+        }
+      });
+    });
+
+    // Build barber performance array
+    const barberPerformance = barbers?.map(barber => ({
+      name: barber.name,
+      transactionCount: barberStats[barber.id]?.transactionCount || 0,
+      totalRevenue: barberStats[barber.id]?.totalRevenue || 0,
+      commission: barberStats[barber.id]?.commission || 0,
+    })).filter(b => b.transactionCount > 0) || [];
+
+    // Build withdrawals array
+    const barberWithdrawals = withdrawals?.map(w => ({
+      barberName: (w.barbers as { name: string })?.name || 'Unknown',
+      amount: Number(w.amount),
+      paymentMethod: w.payment_method,
+    })) || [];
+
+    const totalExpenses = expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+
+    const formatTime = (dateStr: string | null) => {
+      if (!dateStr) return '-';
+      return new Date(dateStr).toLocaleString("id-ID", {
+        timeZone: "Asia/Jakarta",
+        hour: '2-digit',
+        minute: '2-digit',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    };
+
+    return {
+      openedAt: formatTime(shopStatus?.opened_at || null),
+      closedAt: formatTime(new Date().toISOString()),
+      totalRevenue,
+      totalTransactions,
+      serviceRevenue,
+      productRevenue,
+      totalExpenses,
+      barberPerformance,
+      barberWithdrawals,
+    };
+  };
+
   const closeShop = async () => {
     if (!user) return;
 
     try {
       const userName = await getUserName(user.id);
+
+      // Gather daily report data before closing
+      const reportData = await getDailyReportData();
 
       const { error: updateError } = await supabase
         .from('shop_status')
@@ -142,8 +269,11 @@ export function ShopStatusProvider({ children }: { children: ReactNode }) {
 
       if (logError) console.error('Error logging shop close:', logError);
 
-      // Send email notification
-      sendEmailNotification('shop_close', { userName });
+      // Send daily report email (replaces shop_close notification)
+      sendEmailNotification('daily_report', { 
+        userName,
+        ...reportData
+      });
 
       setIsOpen(false);
       toast.success('Toko berhasil ditutup!');
