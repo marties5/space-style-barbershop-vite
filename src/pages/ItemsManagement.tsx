@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Scissors, Package, Upload, X } from 'lucide-react';
 import { serviceSchema, productSchema, validateForm } from '@/lib/validations';
 import TopItemsChart from '@/components/items/TopItemsChart';
+import { CurrencyInput } from '@/components/ui/currency-input';
 
 interface Item {
   id: string;
@@ -503,23 +504,19 @@ export default function ItemsManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="price">Harga Jual (Rp)</Label>
-                    <Input
+                    <CurrencyInput
                       id="price"
-                      type="number"
-                      min="0"
                       value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                      onChange={(value) => setFormData({ ...formData, price: value })}
                       required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="cost_price">HPP (Rp)</Label>
-                    <Input
+                    <CurrencyInput
                       id="cost_price"
-                      type="number"
-                      min="0"
                       value={formData.cost_price}
-                      onChange={(e) => setFormData({ ...formData, cost_price: Number(e.target.value) })}
+                      onChange={(value) => setFormData({ ...formData, cost_price: value })}
                     />
                   </div>
                 </div>
@@ -529,7 +526,7 @@ export default function ItemsManagement() {
                     id="stock"
                     type="number"
                     min="0"
-                    value={formData.stock}
+                    value={formData.stock || ''}
                     onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
                   />
                 </div>
@@ -537,12 +534,10 @@ export default function ItemsManagement() {
             ) : (
               <div className="space-y-2">
                 <Label htmlFor="price">Harga (Rp)</Label>
-                <Input
+                <CurrencyInput
                   id="price"
-                  type="number"
-                  min="0"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                  onChange={(value) => setFormData({ ...formData, price: value })}
                   required
                 />
               </div>
